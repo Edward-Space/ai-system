@@ -2,17 +2,34 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { type LLMOutputComponent } from "@llm-ui/react";
 import { codeToHtml } from "shiki";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { cn } from "@/lib/utils";
 
 // Customize this component with your own styling
 export const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
   const markdown = blockMatch.output;
   const [codeBlocks, setCodeBlocks] = useState<{[key: string]: string}>({});
+  const [visible, setVisible] = useState(false);
+  const componentRef = useRef<HTMLDivElement>(null);
+  
+  // Hiệu ứng fade-in khi component được mount
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
   
   return (
-    <ReactMarkdown 
-      remarkPlugins={[remarkGfm]}
-      components={{
+    <div 
+      ref={componentRef}
+      className={cn(
+        "markdown-content",
+        "opacity-0 transform translate-y-2",
+        visible && "opacity-100 translate-y-0 transition-all duration-500 ease-out"
+      )}
+    >
+      <ReactMarkdown 
+        remarkPlugins={[remarkGfm]}
+        components={{
         code: ({ node, className, children, ...props }) => {
           const match = /language-(\w+)/.exec(className || '');
           const lang = match ? match[1] : '';
@@ -43,7 +60,7 @@ export const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
           if (lang) {
             // Hiển thị code block với header và nội dung đã highlight (nếu có)
             return (
-              <div className="shiki-wrapper my-4">
+              <div className="shiki-wrapper my-4 animate-fade-in">
                 <div className="code-header flex justify-between items-center px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-t-md">
                   <span className="text-xs font-mono">{lang}</span>
                   <button 
@@ -54,7 +71,7 @@ export const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
                   </button>
                 </div>
                 <div 
-                  className="code-block-container"
+                  className="code-block-container transition-all duration-300"
                   dangerouslySetInnerHTML={{
                     __html: codeBlocks[codeKey] || `<pre class="language-${lang}"><code>${codeContent}</code></pre>`
                   }}
@@ -73,6 +90,7 @@ export const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
     >
       {markdown}
     </ReactMarkdown>
+    </div>
   );
 };
 

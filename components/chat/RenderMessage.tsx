@@ -8,10 +8,12 @@ import remarkGfm from "remark-gfm";
 import { codeToHtml } from "shiki";
 
 export const RenderMessage = ({ message }: { message: Message }) => {
+  const isUser = message.role === "user";
+  
   return (
     <div key={message.id} className={`mb-8 max-w-5xl mx-auto`}>
-      <div className="flex items-start  gap-3 mb-2">
-        {message.role === "user" ? (
+      <div className={`flex items-start gap-3 mb-2 ${isUser ? 'flex-row-reverse justify-start' : 'flex-row'}`}>
+        {isUser ? (
           <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 text-sm font-medium">
             B
           </div>
@@ -20,9 +22,9 @@ export const RenderMessage = ({ message }: { message: Message }) => {
             <MessageSquare className="h-4 w-4" />
           </div>
         )}
-        <div className="w-full">
-          <div className="font-medium mb-1">
-            {message.role === "user" ? "Bạn" : "DeepSeek AI"}
+        <div className={`max-w-[80%]`}>
+          <div className={`font-medium mb-1 ${isUser ? 'text-right' : 'text-left'}`}>
+            {isUser ? "Bạn" : "DeepSeek AI"}
             <span className="text-xs text-muted-foreground ml-2 font-normal">
               {new Date(message.timestamp).toLocaleTimeString()}
             </span>
@@ -45,7 +47,7 @@ export const RenderMessage = ({ message }: { message: Message }) => {
                       codeToHtml(codeContent, {
                         lang,
                         themes: {
-                          light: "rose-pine-moon",
+                          light: "tokyo-night",
                           dark: "github-dark",
                         },
                         defaultColor: "light",
@@ -102,7 +104,7 @@ export const RenderMessage = ({ message }: { message: Message }) => {
                 ul: ({ node, ...props }) => (
                     <ul
                       id='markdown-render-ul'
-                      className='flex list-inside list-disc flex-col gap-0'
+                      className='flex list-inside list-disc flex-col  gap-3'
                       {...props}
                     />
                   ),

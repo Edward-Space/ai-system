@@ -144,6 +144,8 @@ export default function ChatSection() {
       },
     ]);
     reset();
+    // Thêm một khoảng dừng nhỏ trước khi bắt đầu streaming để tạo hiệu ứng tự nhiên
+    await new Promise(resolve => setTimeout(resolve, 300));
     // Reset trạng thái streaming
     setStreamingContent("");
     setStreamingState({
@@ -271,10 +273,15 @@ export default function ChatSection() {
     }
   };
 
-  // Auto-scroll on new messages
+  // Auto-scroll on new messages với animation mượt mà
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      // Sử dụng scrollIntoView với behavior: "smooth" để tạo hiệu ứng cuộn mượt mà
+      const scrollElement = scrollRef.current;
+      scrollElement.scrollTo({
+        top: scrollElement.scrollHeight,
+        behavior: "smooth"
+      });
     }
   }, [messages, streamingContent]);
 
@@ -346,23 +353,37 @@ export default function ChatSection() {
           </div>
         </div>
 
-        {/* Chat content */}
+        {/* Chat content với animation */}
         <ScrollArea ref={scrollRef} className="h-[80vh] p-4 ">
-          {messages.length === 0 && !streamingState.isStreaming && (
-            <FirstChatCTA/>
-          )}
-          {/* Hiển thị tin nhắn */}
-          {messages.map((message, index) => (
-            <RenderMessage message={message} key={index} />
-          ))}
-          {/* Hiển thị nội dung đang streaming */}
-          {streamingState.isStreaming && (
-            <LoadingStreaming blockMatches={blockMatches} />
-          )}
-          {/* Hiển thị lỗi nếu có */}
-          {streamingState.isError && (
-           <ErrorStreaming streamingState={streamingState}/>
-          )}
+          <div className="space-y-6 transition-all duration-300">
+            {messages.length === 0 && !streamingState.isStreaming && (
+              <div className="animate-fade-in">
+                <FirstChatCTA/>
+              </div>
+            )}
+            {/* Hiển thị tin nhắn với animation */}
+            {messages.map((message, index) => (
+              <div 
+                key={index} 
+                className="animate-fade-in" 
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <RenderMessage message={message} />
+              </div>
+            ))}
+            {/* Hiển thị nội dung đang streaming với animation */}
+            {streamingState.isStreaming && (
+              <div className="animate-fade-in">
+                <LoadingStreaming blockMatches={blockMatches} />
+              </div>
+            )}
+            {/* Hiển thị lỗi nếu có */}
+            {streamingState.isError && (
+              <div className="animate-fade-in">
+                <ErrorStreaming streamingState={streamingState}/>
+              </div>
+            )}
+          </div>
         </ScrollArea>
 
         {/* Input area */}
