@@ -22,6 +22,7 @@ Dự án này là một ứng dụng web sử dụng các công nghệ mới nh�
 
 ```
 ├── app/                  # App Router của Next.js
+│   ├── api/              # API routes
 │   ├── layout.tsx        # Layout chính của ứng dụng
 │   └── page.tsx          # Trang chính
 ├── components/           # Các thành phần UI
@@ -29,7 +30,12 @@ Dự án này là một ứng dụng web sử dụng các công nghệ mới nh�
 │   └── ui/               # Các thành phần UI cơ bản
 ├── hooks/                # React hooks tùy chỉnh
 ├── lib/                  # Các tiện ích và hàm helper
-└── public/               # Tài nguyên tĩnh
+├── model/                # TypeScript interfaces và types
+├── public/               # Tài nguyên tĩnh
+└── service/              # API services
+    ├── api.ts            # Axios configuration
+    ├── swr.ts            # SWR hooks
+    └── index.ts          # Service exports
 ```
 
 ## Tính năng
@@ -39,6 +45,7 @@ Dự án này là một ứng dụng web sử dụng các công nghệ mới nh�
 - **Hiệu ứng đặc biệt**: Bao gồm globe 3D, lưới nhấp nháy, và hiệu ứng marquee
 - **Responsive**: Tương thích với nhiều kích thước màn hình
 - **Dark mode**: Hỗ trợ chế độ sáng/tối
+- **API Integration**: Tích hợp Axios và SWR để gọi API
 
 ## Bắt đầu
 
@@ -50,8 +57,87 @@ Dự án này là một ứng dụng web sử dụng các công nghệ mới nh�
 ### Cài đặt
 
 ```bash
-# Cài đặt các dependencies
+# Sử dụng npm
+npm install
+
+# Hoặc sử dụng pnpm
 pnpm install
+```
+
+### Chạy ứng dụng
+
+```bash
+# Chế độ phát triển
+npm run dev
+# hoặc
+pnpm dev
+
+# Build cho production
+npm run build
+# hoặc
+pnpm build
+
+# Chạy bản build
+npm run start
+# hoặc
+pnpm start
+```
+
+## API Services
+
+Dự án sử dụng Axios để gọi API từ server và SWR để gọi API từ client.
+
+### Server-side API (Axios)
+
+Sử dụng `apiService` để gọi API từ server-side:
+
+```typescript
+import apiService from '@/service';
+import { User } from '@/model';
+
+// GET request
+const users = await apiService.get<User[]>('/users');
+
+// POST request
+const newUser = await apiService.post<User>('/users', { name: 'John Doe', email: 'john@example.com' });
+
+// PUT request
+const updatedUser = await apiService.put<User>(`/users/${userId}`, { name: 'Jane Doe' });
+
+// DELETE request
+const deletedUser = await apiService.delete<User>(`/users/${userId}`);
+```
+
+### Client-side API (SWR)
+
+Sử dụng các hooks từ `swrService` để gọi API từ client-side:
+
+```typescript
+import { useApi, usePostMutation } from '@/service';
+import { User } from '@/model';
+
+// Fetch data
+const { data: users, error, isLoading } = useApi<User[]>('/users');
+
+// Mutation (POST, PUT, PATCH, DELETE)
+const { trigger: createUser, isMutating } = usePostMutation<User>('/users');
+
+// Sử dụng mutation
+const handleSubmit = async () => {
+  const newUser = await createUser({ name: 'John Doe', email: 'john@example.com' });
+  console.log('Created user:', newUser);
+};
+```
+
+## Môi trường
+
+Tạo file `.env.local` với các biến môi trường sau:
+
+```
+NEXT_PUBLIC_API_URL=http://your-api-url.com/api
+```
+
+```
 
 # Chạy môi trường phát triển
 pnpm dev
