@@ -42,8 +42,8 @@ export const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
               codeToHtml(codeContent, {
                 lang,
                 themes: {
-                  light: 'github-light',
-                  dark: 'github-dark'
+                  light: "tokyo-night",
+                  dark: "github-dark",
                 },
                 defaultColor: 'light'
               }).then(html => {
@@ -60,7 +60,7 @@ export const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
           if (lang) {
             // Hiển thị code block với header và nội dung đã highlight (nếu có)
             return (
-              <div className="shiki-wrapper my-4 animate-fade-in">
+              <div className="shiki-wrapper w-full my-4 animate-fade-in">
                 <div className="code-header flex justify-between items-center px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-t-md">
                   <span className="text-xs font-mono">{lang}</span>
                   <button 
@@ -71,7 +71,7 @@ export const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
                   </button>
                 </div>
                 <div 
-                  className="code-block-container transition-all duration-300"
+                  className="code-block-container bg-black w-full overflow-x-scroll markdown-code transition-all duration-300"
                   dangerouslySetInnerHTML={{
                     __html: codeBlocks[codeKey] || `<pre class="language-${lang}"><code>${codeContent}</code></pre>`
                   }}
@@ -85,7 +85,60 @@ export const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
               {children}
             </code>
           );
-        }
+        },
+        
+        ul: ({ node, ...props }) => (
+          <ul
+            id='markdown-render-ul'
+            className='flex list-inside list-disc flex-col gap-3'
+            {...props}
+          />
+        ),
+
+        ol: ({ node, ...props }) => {
+          return(
+          <ol
+            id='markdown-render-ol'
+            className='list-inside list-decimal gap-0'
+            {...props}
+          >
+          </ol>
+        )},
+
+        li: ({ node, children, ...props }) => {
+          return (
+            <li className='list-inside marker:text-secondary' {...props}>
+                {children}
+            </li>
+          );
+        },
+        
+        h3: ({ node, children, ...props }) => (
+          <h3 className="whitespace-pre-wrap" {...props}>
+            {children}
+          </h3>
+        ),
+        h4: ({ node, children, ...props }) => (
+          <h4 className="whitespace-pre-wrap" {...props}>
+            {children}
+          </h4>
+        ),
+        h5: ({ node, children, ...props }) => (
+          <h5 className="whitespace-pre-wrap" {...props}>
+            {children}
+          </h5>
+        ),
+        h6: ({ node, children, ...props }) => (
+          <h6 className="whitespace-pre-wrap" {...props}>
+            {children}
+          </h6>
+        ),
+
+        table: ({ node, ...props }) => (
+          <div className="hide-scrollbar w-full overflow-x-scroll break-words">
+            <table className="w-full table-auto" {...props} />
+          </div>
+        ),
       }}
     >
       {markdown}

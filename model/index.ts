@@ -1,5 +1,7 @@
 // Common interfaces for API responses
 
+import { PublicConfiguration } from "swr/_internal";
+
 // Base API response interface
 export interface ApiResponse<T> {
   data: T;
@@ -62,3 +64,57 @@ export interface RegisterResponse extends ApiResponse<{
   user: User;
   token: string;
 }> {}
+
+export type TFetchHeaders = {
+  cache: RequestCache;
+  next: { revalidate: number; tags: string[] };
+  headers: {
+    'Content-Type': string;
+    Authorization: string;
+    'x-api-key': string;
+  };
+};
+
+export type TResponseData<T = unknown> = {
+  data?: T;
+  // meta?: TMeta;
+  message?: string;
+  status?: string;
+  status_code?: number;
+  error?: {
+    errors: {
+      msg: string;
+    };
+  };
+};
+
+type TParams = string | string[][] | Record<string, string> | URLSearchParams | undefined;
+
+type TOptionHook<Data = unknown> = {
+  params?: TParams;
+  isFetch?: boolean;
+  config?: Partial<PublicConfiguration<Data | undefined, unknown, any>>;
+  onSuccess?: (data: Data,meta?: TMeta) => void;
+  onError?: (error: unknown) => void;
+};
+
+type TOptionFetchDataHook<Data = unknown> = TOptionHook<Data> & {
+  key: string;
+}
+
+type TMeta = {
+  pagination: {
+    count?: number;
+    current_page?: number;
+    per_page?: number;
+    total: number;
+    total_pages: number;
+  };
+};
+
+export type {
+  TOptionHook,
+  TOptionFetchDataHook,
+  TParams,
+  TMeta
+}

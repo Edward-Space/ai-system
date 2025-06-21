@@ -3,14 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLLMOutput } from "@llm-ui/react";
-import {
-  findCompleteCodeBlock,
-  findPartialCodeBlock,
-  codeBlockLookBack,
-} from "@llm-ui/code";
 import { markdownLookBack } from "@llm-ui/markdown";
 import { Button } from "@/components/ui/button";
-import { codeToHtml } from "shiki";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
@@ -65,51 +59,51 @@ export default function ChatSection() {
       component: MarkdownComponent,
       lookBack: markdownLookBack(),
     },
-    blocks: [
-      {
-        component: ({ blockMatch }) => {
-          // Trích xuất ngôn ngữ và mã từ blockMatch.output
-          const codeBlockRegex = /```([\w-]*)\s\n([\s\S]*?)```/;
-          const match = blockMatch.output.match(codeBlockRegex);
-          const language = match?.[1] || "";
-          const code = match?.[2] || blockMatch.output;
-          const [highlightedCode, setHighlightedCode] = useState<string>("");
+    // blocks: [
+    //   {
+    //     component: ({ blockMatch }) => {
+    //       // Trích xuất ngôn ngữ và mã từ blockMatch.output
+    //       const codeBlockRegex = /```([\w-]*)\s\n([\s\S]*?)```/;
+    //       const match = blockMatch.output.match(codeBlockRegex);
+    //       const language = match?.[1] || "";
+    //       const code = match?.[2] || blockMatch.output;
+    //       const [highlightedCode, setHighlightedCode] = useState<string>("");
 
-          // Xử lý Promise từ codeToHtml
-          useEffect(() => {
-            let isMounted = true;
+    //       // Xử lý Promise từ codeToHtml
+    //       useEffect(() => {
+    //         let isMounted = true;
 
-            if (code) {
-              codeToHtml(code.trim(), {
-                lang: language || "text",
-                themes: {
-                  light: "github-light",
-                  dark: "github-dark",
-                },
-                defaultColor: "light",
-              })
-                .then((html) => {
-                  if (isMounted) {
-                    setHighlightedCode(html);
-                  }
-                })
-                .catch((err) => {
-                  console.error("Error highlighting code:", err);
-                });
-            }
+    //         if (code) {
+    //           codeToHtml(code.trim(), {
+    //             lang: language || "text",
+    //             themes: {
+    //               light: "github-light",
+    //               dark: "github-dark",
+    //             },
+    //             defaultColor: "light",
+    //           })
+    //             .then((html) => {
+    //               if (isMounted) {
+    //                 setHighlightedCode(html);
+    //               }
+    //             })
+    //             .catch((err) => {
+    //               console.error("Error highlighting code:", err);
+    //             });
+    //         }
 
-            return () => {
-              isMounted = false;
-            };
-          }, [code, language]);
+    //         return () => {
+    //           isMounted = false;
+    //         };
+    //       }, [code, language]);
 
-          return <div className=""></div>;
-        },
-        findCompleteMatch: findCompleteCodeBlock(),
-        findPartialMatch: findPartialCodeBlock(),
-        lookBack: codeBlockLookBack(),
-      },
-    ],
+    //       return <div className=""></div>;
+    //     },
+    //     findCompleteMatch: findCompleteCodeBlock(),
+    //     findPartialMatch: findPartialCodeBlock(),
+    //     lookBack: codeBlockLookBack(),
+    //   },
+    // ],
   });
 
   // Hủy request khi cần
@@ -169,7 +163,7 @@ export default function ChatSection() {
 
       // Gọi API với signal để có thể hủy
       const response = await fetch(
-        "https://api-gateway.newweb.vn/api/v1/chat/sse",
+        "https://api-gateway.newweb.vn/api/v1/chat/dashboard/sse",
         {
           method: "POST",
           headers: {
@@ -315,7 +309,7 @@ export default function ChatSection() {
       {/* Khu vực chính - Nội dung chat */}
       <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <div className="border-b  border-gray-200 dark:border-gray-800 p-4 flex justify-between items-center">
+        <div className="border-b  border-gray-200 dark:border-gray-800 p-4 pt-0 flex justify-between items-center">
           <h1 className="font-semibold">Chat with DeepSeek</h1>
           <div className="flex gap-2">
             <TooltipProvider>

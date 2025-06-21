@@ -5,34 +5,23 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Logo } from "./Logo";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Download, MessageSquare, Plus, Settings } from "lucide-react";
-import { SidebarMenu } from "../sidebar/SidbarMenu";
+import { SidebarMenuFeatures } from "../sidebar/SidbarMenuFeatures";
+import { SidebarAction } from "../sidebar/SidebarAction";
 
 export function AppSidebar({ lang }: { lang: string }) {
   return (
     <Sidebar collapsible="icon" className="border-none bg-primary/20 ">
       <SidebarHeader className="h-fit pt-5 p-4 flex justify-between items-center">
-        {/* <Logo />
-        <Button variant="ghost" size="icon">
-          <Settings className="h-4 w-4" />
-        </Button> */}
+        <Logo />
       </SidebarHeader>
-      <SidebarContent className="hide-scrollbar h-full">
-        <SidebarMenu />
+      {/*  */}
+      <SidebarContent className="hide-scrollbar h-full px-1 flex flex-col gap-5 ">
+        <SidebarAction/>
+        <SidebarMenuFeatures lang={lang} />
       </SidebarContent>
-
+      {/*  */}
       <SidebarFooter className="p-2 border-t border-gray-200 dark:border-gray-800">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-muted-foreground"
-          size="sm"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          <span>Xuất lịch sử chat</span>
-        </Button>
+       
       </SidebarFooter>
     </Sidebar>
   );

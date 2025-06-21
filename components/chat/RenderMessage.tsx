@@ -9,10 +9,14 @@ import { codeToHtml } from "shiki";
 
 export const RenderMessage = ({ message }: { message: Message }) => {
   const isUser = message.role === "user";
-  
+
   return (
     <div key={message.id} className={`mb-8 max-w-5xl mx-auto`}>
-      <div className={`flex items-start gap-3 mb-2 ${isUser ? 'flex-row-reverse justify-start' : 'flex-row'}`}>
+      <div
+        className={`flex items-start gap-3 mb-2 ${
+          isUser ? "flex-row-reverse justify-start" : "flex-row"
+        }`}
+      >
         {isUser ? (
           <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 text-sm font-medium">
             B
@@ -23,7 +27,11 @@ export const RenderMessage = ({ message }: { message: Message }) => {
           </div>
         )}
         <div className={`max-w-[80%]`}>
-          <div className={`font-medium mb-1 ${isUser ? 'text-right' : 'text-left'}`}>
+          <div
+            className={`font-medium mb-1 ${
+              isUser ? "text-right" : "text-left"
+            }`}
+          >
             {isUser ? "Bạn" : "DeepSeek AI"}
             <span className="text-xs text-muted-foreground ml-2 font-normal">
               {new Date(message.timestamp).toLocaleTimeString()}
@@ -33,7 +41,7 @@ export const RenderMessage = ({ message }: { message: Message }) => {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                code: ({ node, className, children, ...props }) => {
+                code: ({ className, children, ...props }) => {
                   const match = /language-(\w+)/.exec(className || "");
                   const lang = match ? match[1] : "";
                   const codeContent = String(children).replace(/\n$/, "");
@@ -100,57 +108,60 @@ export const RenderMessage = ({ message }: { message: Message }) => {
                     </code>
                   );
                 },
+                a: ({ ...props }) => <a target="_blank" {...props} />,
+                ul: ({ ...props }) => (
+                  <ul
+                    id="markdown-render-ul"
+                    className="flex list-inside list-disc flex-col  gap-3"
+                    {...props}
+                  />
+                ),
 
-                ul: ({ node, ...props }) => (
-                    <ul
-                      id='markdown-render-ul'
-                      className='flex list-inside list-disc flex-col  gap-3'
-                      {...props}
-                    />
-                  ),
-
-                  ol: ({ node, ...props }) => {
-                    return(
+                ol: ({ ...props }) => {
+                  return (
                     <ol
-                      id='markdown-render-ol'
-                      className=' list-inside list-decimal   gap-0'
+                      id="markdown-render-ol"
+                      className=" list-inside list-decimal   gap-0"
+                      {...props}
+                    ></ol>
+                  );
+                },
+
+                li: ({ children, ...props }) => {
+                  return (
+                    <li
+                      className=" list-inside   marker:text-secondary  "
                       {...props}
                     >
-                    </ol>
-                  )},
-
-                  li: ({ node, children, ...props }) => {
-                    return (
-                      <li className=' list-inside   marker:text-secondary  ' {...props}>
-                          {children}
-                      </li>
-                    );
-                  },
-                h3: ({ node, children, ...props }) => (
+                      {children}
+                    </li>
+                  );
+                },
+                h3: ({ children, ...props }) => (
                   <h3 className="whitespace-pre-wrap" {...props}>
                     {children}
                   </h3>
                 ),
-                h4: ({ node, children, ...props }) => (
+                h4: ({ children, ...props }) => (
                   <h4 className="whitespace-pre-wrap" {...props}>
                     {children}
                   </h4>
                 ),
-                h5: ({ node, children, ...props }) => (
+                h5: ({ children, ...props }) => (
                   <h5 className="whitespace-pre-wrap" {...props}>
                     {children}
                   </h5>
                 ),
-                h6: ({ node, children, ...props }) => (
+                h6: ({ children, ...props }) => (
                   <h6 className="whitespace-pre-wrap" {...props}>
                     {children}
                   </h6>
                 ),
 
-                table: ({ node, ...props }) => (
-                    <div className="hide-scrollbar w-full overflow-x-scroll break-words">
-                      <table className="w-full table-auto" {...props} />
-                    </div>
+                table: ({ ...props }) => (
+                  <div className="hide-scrollbar w-full overflow-x-scroll break-words">
+                    <table className="w-full table-auto" {...props} />
+                  </div>
                 ),
               }}
             >

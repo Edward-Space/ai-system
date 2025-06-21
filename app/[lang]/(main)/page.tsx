@@ -2,7 +2,7 @@ import ChatPage from "@/components/chat/ChatSection";
 
 export default function HomePage() {
   return (
-    <div className="h-[calc(100vh-60px)] overflow-y-hidden">
+    <div className="h-[calc(100vh-60px)] overflow-y-hidden w-full">
       <ChatPage  />
     </div>
   );
