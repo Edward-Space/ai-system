@@ -1,30 +1,44 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLLMOutput } from "@llm-ui/react";
 import { markdownLookBack } from "@llm-ui/markdown";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {  Send, Trash2, X, Share2 } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { MarkdownComponent } from "./MarkdownComponent";
 import AutoResizeTextarea from "./AutoResizeTextarea";
-import { FormData, Message, StreamingState } from "@/model/chat";
+import { FormData, IMessage, StreamingState } from "@/model/chat";
 import { useGenId } from "@/hooks/useGenID";
 import { RenderMessage } from "./RenderMessage";
 import { LoadingStreaming } from "./LoadingSteaming";
 import { ErrorStreaming } from "./ErrorSteaming";
 import { FirstChatCTA } from "./FirstChatCTA";
+import { IBot, IConversation } from "@/model/bot";
+import { useRouter } from "next/navigation";
+import { useSelectModel } from "@/lib/store";
 
-export default function ChatSection() {
+interface IProps {
+  type?: "dashboard" | "agent" | "testing";
+  bot?: IBot;
+  conversations?: IConversation;
+  session_id?: string;
+  lang?: string;
+}
+
+export default function ChatSection({
+  type = "dashboard",
+  bot,
+  conversations,
+  session_id,
+  lang,
+}: IProps) {
+  const route = useRouter();
+  //
+  const { selectedModel } = useSelectModel();
+  //
   const { register, handleSubmit, reset, watch } = useForm<FormData>();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const [streamingContent, setStreamingContent] = useState<string>("");
   const [streamingState, setStreamingState] = useState<StreamingState>({
     isStreaming: false,
@@ -35,22 +49,6 @@ export default function ChatSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const promptValue = watch("prompt");
-
-  // Lấy lịch sử chat từ localStorage khi component được mount
-  useEffect(() => {
-    const savedMessages = localStorage.getItem("chatMessages");
-    if (savedMessages) {
-      try {
-        const parsedMessages = JSON.parse(savedMessages);
-        if (Array.isArray(parsedMessages)) {
-          setMessages(parsedMessages);
-        }
-      } catch (error) {
-        console.error("Error parsing saved messages:", error);
-      }
-    }
-  }, []);
-
   // Parse and render LLM output into blocks
   const { blockMatches } = useLLMOutput({
     llmOutput: streamingContent,
@@ -59,53 +57,7 @@ export default function ChatSection() {
       component: MarkdownComponent,
       lookBack: markdownLookBack(),
     },
-    // blocks: [
-    //   {
-    //     component: ({ blockMatch }) => {
-    //       // Trích xuất ngôn ngữ và mã từ blockMatch.output
-    //       const codeBlockRegex = /```([\w-]*)\s\n([\s\S]*?)```/;
-    //       const match = blockMatch.output.match(codeBlockRegex);
-    //       const language = match?.[1] || "";
-    //       const code = match?.[2] || blockMatch.output;
-    //       const [highlightedCode, setHighlightedCode] = useState<string>("");
-
-    //       // Xử lý Promise từ codeToHtml
-    //       useEffect(() => {
-    //         let isMounted = true;
-
-    //         if (code) {
-    //           codeToHtml(code.trim(), {
-    //             lang: language || "text",
-    //             themes: {
-    //               light: "github-light",
-    //               dark: "github-dark",
-    //             },
-    //             defaultColor: "light",
-    //           })
-    //             .then((html) => {
-    //               if (isMounted) {
-    //                 setHighlightedCode(html);
-    //               }
-    //             })
-    //             .catch((err) => {
-    //               console.error("Error highlighting code:", err);
-    //             });
-    //         }
-
-    //         return () => {
-    //           isMounted = false;
-    //         };
-    //       }, [code, language]);
-
-    //       return <div className=""></div>;
-    //     },
-    //     findCompleteMatch: findCompleteCodeBlock(),
-    //     findPartialMatch: findPartialCodeBlock(),
-    //     lookBack: codeBlockLookBack(),
-    //   },
-    // ],
   });
-
   // Hủy request khi cần
   const cancelStream = () => {
     if (abortControllerRef.current) {
@@ -119,7 +71,6 @@ export default function ChatSection() {
       setIsStreamFinished(true);
     }
   };
-
   const onSubmit = async (data: FormData) => {
     const userPrompt = data?.prompt?.trim();
     if (!userPrompt) return;
@@ -139,7 +90,7 @@ export default function ChatSection() {
     ]);
     reset();
     // Thêm một khoảng dừng nhỏ trước khi bắt đầu streaming để tạo hiệu ứng tự nhiên
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     // Reset trạng thái streaming
     setStreamingContent("");
     setStreamingState({
@@ -155,9 +106,14 @@ export default function ChatSection() {
 
     try {
       const payload = {
-        generative_model: "google/gemini-2.5-pro",
-        type: "dashboard",
-        system_prompt: "Bạn là một trợ lý AI thông minh hỗ trợ người dùng",
+        bot: bot,
+        bot_id: bot?.id,
+        generative_model: selectedModel?.model_id ?? "google/gemini-2.5-pro",
+        session_id: session_id,
+        ...(type != "agent" && { type: type }),
+        ...(type !== "dashboard" && {
+          system_prompt: bot?.system_prompt ?? "",
+        }),
         prompt: userPrompt,
       };
 
@@ -209,6 +165,9 @@ export default function ChatSection() {
             try {
               const json = JSON.parse(jsonPart);
 
+              if (!session_id && json.session_id && type != "testing") {
+                route.replace(`?session_id=${json.session_id}`);
+              }
               if (Object.keys(json).length === 0) {
                 setMessages((prev) => [
                   ...prev,
@@ -266,35 +225,6 @@ export default function ChatSection() {
       abortControllerRef.current = null;
     }
   };
-
-  // Auto-scroll on new messages với animation mượt mà
-  useEffect(() => {
-    if (scrollRef.current) {
-      // Sử dụng scrollIntoView với behavior: "smooth" để tạo hiệu ứng cuộn mượt mà
-      const scrollElement = scrollRef.current;
-      scrollElement.scrollTo({
-        top: scrollElement.scrollHeight,
-        behavior: "smooth"
-      });
-    }
-  }, [messages, streamingContent]);
-
-  // Lưu tin nhắn vào localStorage khi messages thay đổi
-  useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem("chatMessages", JSON.stringify(messages));
-    }
-  }, [messages]);
-
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
-
   // Xóa lịch sử chat
   const clearChatHistory = () => {
     if (streamingState.isStreaming) {
@@ -303,63 +233,73 @@ export default function ChatSection() {
     setMessages([]);
     localStorage.removeItem("chatMessages");
   };
-
+  // Auto-scroll on new messages với animation mượt mà
+  useEffect(() => {
+    if (scrollRef.current) {
+      // Sử dụng scrollIntoView với behavior: "smooth" để tạo hiệu ứng cuộn mượt mà
+      const scrollElement = scrollRef.current;
+      scrollElement.scrollTo({
+        top: scrollElement.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages, streamingContent]);
+  // Lưu tin nhắn vào localStorage khi messages thay đổi
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("chatMessages", JSON.stringify(messages));
+    }
+  }, [messages]);
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+  // Lấy lịch sử chat từ localStorage khi component được mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem("chatMessages");
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        if (Array.isArray(parsedMessages)) {
+          setMessages(parsedMessages);
+        }
+      } catch (error) {
+        console.error("Error parsing saved messages:", error);
+      }
+    }
+  }, []);
+  useEffect(() => {
+    const history: IMessage[] =
+      conversations?.messages.map((e) => ({
+        id: e.id,
+        role: e.role as "user" | "assistant",
+        content: e.content.content,
+        timestamp: 0,
+      })) ?? [];
+    //
+    setMessages(history);
+  }, [conversations]);
   return (
     <div className="flex h-full">
       {/* Khu vực chính - Nội dung chat */}
-      <div className="flex-1 flex flex-col h-full">
-        {/* Header */}
-        <div className="border-b  border-gray-200 dark:border-gray-800 p-4 pt-0 flex justify-between items-center">
-          <h1 className="font-semibold">Chat with DeepSeek</h1>
-          <div className="flex gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={clearChatHistory}
-                    disabled={
-                      messages.length === 0 || streamingState.isStreaming
-                    }
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Xóa lịch sử chat</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Chia sẻ cuộc trò chuyện</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-
+      <div className="flex-1 flex flex-col justify-between ">
         {/* Chat content với animation */}
-        <ScrollArea ref={scrollRef} className="h-[80vh] p-4 ">
+        <ScrollArea ref={scrollRef} className="max-h-[calc(100vh-300px)] p-4 ">
           <div className="space-y-6 transition-all duration-300">
             {messages.length === 0 && !streamingState.isStreaming && (
               <div className="animate-fade-in">
-                <FirstChatCTA/>
+                <FirstChatCTA />
               </div>
             )}
             {/* Hiển thị tin nhắn với animation */}
             {messages.map((message, index) => (
-              <div 
-                key={index} 
-                className="animate-fade-in" 
+              <div
+                key={index}
+                className="animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <RenderMessage message={message} />
@@ -374,55 +314,51 @@ export default function ChatSection() {
             {/* Hiển thị lỗi nếu có */}
             {streamingState.isError && (
               <div className="animate-fade-in">
-                <ErrorStreaming streamingState={streamingState}/>
+                <ErrorStreaming streamingState={streamingState} />
               </div>
             )}
           </div>
         </ScrollArea>
 
         {/* Input area */}
-        <div className="border-t border-gray-200 dark:border-gray-800 p-4">
+        <div className="border-t border-gray-200 dark:border-gray-800 p-4 ">
           <div className="max-w-5xl mx-auto">
             <form
               onSubmit={handleSubmit(onSubmit)}
               className="flex flex-col w-full gap-2"
             >
-              <div className="flex gap-2 relative bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden shadow-sm">
+              <div className="flex flex-col gap-2 relative bg-secondary py-2 px-3  border border-gray-200  rounded-[24px] overflow-hidden shadow-sm">
                 <AutoResizeTextarea
                   {...register("prompt", { required: true })}
                   placeholder="Nhập tin nhắn của bạn..."
                   style={{ resize: "none" }}
-                  className="flex-1 min-h-[56px] p-3 pr-10 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="flex-1 min-h-[98px] py-4  border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                   disabled={streamingState.isStreaming}
                 />
 
-                <div className="flex items-center pr-2">
+                <div className="flex items-center justify-end">
                   {streamingState.isStreaming ? (
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       onClick={cancelStream}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 [&_svg:not([class*='size-'])]:size-7 size-10"
                     >
-                      <X className="h-5 w-5" />
+                      <X className="h-7  w-7 " />
                     </Button>
                   ) : (
                     <Button
                       type="submit"
                       size="icon"
                       variant="ghost"
-                      className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      className="text-blue-500 hover:text-blue-600 bg-white cursor-pointer border rounded-full [&_svg:not([class*='size-'])]:size-5 size-10"
                       disabled={!promptValue?.trim()}
                     >
-                      <Send className="h-5 w-5" />
+                      <Send className="h-7 w-7" />
                     </Button>
                   )}
                 </div>
-              </div>
-              <div className="text-xs text-center text-muted-foreground">
-                DeepSeek AI có thể tạo ra thông tin không chính xác. Hãy kiểm
-                tra thông tin quan trọng.
               </div>
             </form>
           </div>

@@ -1,13 +1,13 @@
 "use client";
 
-import { Message } from "@/model/chat";
+import { IMessage } from "@/model/chat";
 import { MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { codeToHtml } from "shiki";
 
-export const RenderMessage = ({ message }: { message: Message }) => {
+export const RenderMessage = ({ message }: { message: IMessage }) => {
   const isUser = message.role === "user";
 
   return (
@@ -37,7 +37,7 @@ export const RenderMessage = ({ message }: { message: Message }) => {
               {new Date(message.timestamp).toLocaleTimeString()}
             </span>
           </div>
-          <div className="prose prose-sm dark:prose-invert max-w-none flex flex-col gap-5">
+          <div id="markdown-render" className="prose prose-sm dark:prose-invert max-w-none flex flex-col gap-5">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{

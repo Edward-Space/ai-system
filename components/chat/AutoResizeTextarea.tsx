@@ -32,7 +32,7 @@ const AutoResizeTextarea = forwardRef<HTMLTextAreaElement, AutoResizeTextareaPro
       <Textarea
         {...props}
         ref={textareaRef}
-        className={`hide-scrollbar max-h-[200px] overflow-y-scroll rounded-none border border-transparent px-0 focus-visible:ring-transparent ${props.className || ''}`}
+        className={`hide-scrollbar max-h-[200px] rounded-none border border-transparent px-0 focus-visible:ring-transparent ${props.className || ''}`}
       />
     );
   },

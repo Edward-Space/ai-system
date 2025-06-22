@@ -7,6 +7,7 @@ import {
 import { Logo } from "./Logo";
 import { SidebarMenuFeatures } from "../sidebar/SidbarMenuFeatures";
 import { SidebarAction } from "../sidebar/SidebarAction";
+import { SidebarConversations } from "./SidebarConversations";
 
 export function AppSidebar({ lang }: { lang: string }) {
   return (
@@ -18,6 +19,7 @@ export function AppSidebar({ lang }: { lang: string }) {
       <SidebarContent className="hide-scrollbar h-full px-1 flex flex-col gap-5 ">
         <SidebarAction/>
         <SidebarMenuFeatures lang={lang} />
+        <SidebarConversations lang={lang}/>
       </SidebarContent>
       {/*  */}
       <SidebarFooter className="p-2 border-t border-gray-200 dark:border-gray-800">

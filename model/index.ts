@@ -112,9 +112,11 @@ type TMeta = {
   };
 };
 
+type SearchParams = { [key: string]: string | string[] | undefined }
 export type {
   TOptionHook,
   TOptionFetchDataHook,
   TParams,
-  TMeta
+  TMeta,
+  SearchParams
 }

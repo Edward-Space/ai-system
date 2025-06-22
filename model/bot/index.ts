@@ -53,4 +53,29 @@ interface ICategory {
   update_at: string;
 }
 
-export type { IBot, ICategory ,CreateBotProps};
+
+interface IConversation {
+  id: string;
+  create_at: string;
+  update_at: string;
+  title: string;
+  user_id: string;
+  bot_id: string;
+  bot: IBot;
+  generative_model: "google/gemini-2.5-pro";
+  messages: {
+    id: string;
+    create_at: string;
+    update_at: string;
+    conversation_id: string;
+    content: {
+      content_type: string;
+      content: string;
+    };
+    role: string;
+    status: string;
+    metadata: object;
+  }[];
+}
+
+export type { IBot, ICategory ,CreateBotProps, IConversation};

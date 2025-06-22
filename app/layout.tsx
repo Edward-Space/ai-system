@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 
 
-const poppins = Poppins({
+const poppins = Be_Vietnam_Pro({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['400','500','600','700'],
   display: 'swap',
   variable: '--font-poppins'
 })

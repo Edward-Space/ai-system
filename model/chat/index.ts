@@ -1,20 +1,38 @@
+import { IBot } from "../bot";
+
 interface FormData {
-    prompt: string;
-  }
-  
-  interface Message {
-    id: string;
-    role: "user" | "assistant";
-    content: string;
-    timestamp: number;
-  }
-  
-  interface StreamingState {
-    isStreaming: boolean;
-    isError: boolean;
-    errorMessage: string;
-  }
+  prompt: string;
+}
 
-  
+interface IMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: number;
+}
 
-  export type {FormData,Message,StreamingState}
+interface StreamingState {
+  isStreaming: boolean;
+  isError: boolean;
+  errorMessage: string;
+}
+
+interface IPayloadSendChat {
+  prompt: string;
+  system_prompt?: string;
+  type?: "dashboard" | "testing" | undefined;
+  bot: IBot | undefined;
+  bot_id: string | undefined;
+  generative_model: string;
+  session_id: string | undefined;
+}
+
+
+interface IHistoryChatItem {
+  key: string;
+  title: string;
+  bot_id?: string;
+  history?: IHistoryChatItem[];
+}
+
+export type { FormData, IMessage, StreamingState, IHistoryChatItem };

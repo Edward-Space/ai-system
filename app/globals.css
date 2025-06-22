@@ -178,3 +178,35 @@ td {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+
+
+.prose h1 {
+  font-size: 2.25rem;    /* 36px */
+  line-height: 2.5rem;   /* 40px */
+  font-weight: 600;      /* font-semibold → 600 */ 
+}
+.prose h2 {
+  font-size: 1.875rem;   /* 30px */
+  line-height: 2.25rem;  /* 36px */
+  font-weight: 600;      /* font-semibold → 600 */ 
+}
+.prose h3 {
+  font-size: 1.5rem;     /* 24px */
+  line-height: 2rem;     /* 32px */
+  font-weight: 600;      /* font-semibold → 600 */ }
+.prose h4 {
+  font-size: 1.25rem;    /* 20px */
+  line-height: 1.75rem;  /* 28px */
+  font-weight: 600;      /* font-semibold → 600 */ }
+.prose h5 {
+  font-size: 1.125rem;   /* 18px */
+  line-height: 1.75rem;  /* 28px */
+  font-weight: 600;      /* font-semibold → 600 */ }
+.prose h6 {
+  font-size: 1rem;       /* 16px */
+  line-height: 1.5rem;   /* 24px */
+  font-weight: 600;      /* font-semibold → 600 */ }
+.prose p {
+  font-size: 1rem;       /* 16px */
+  line-height: 1.5rem;   /* 24px */
+  font-weight: 400;      /* font-normal   → 400 */ }
