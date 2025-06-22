@@ -4,14 +4,13 @@ import { cn } from "@/lib/utils";
 import { IHistoryChatItem } from "@/model/chat";
 import { useGetConversations } from "@/swr/useGetConversations";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
 
 export const SidebarConversations = ({ lang }: { lang: string }) => {
   const { data, mutate } = useGetConversations();
-  const pathName = usePathname();
   const searchParams = useSearchParams();
-  const session_id_search = searchParams.get("session_id");
+  const session_id = searchParams.get("session_id");
 
   const DataHistoryChat: IHistoryChatItem[] = useMemo(() => {
     return [
@@ -56,7 +55,7 @@ export const SidebarConversations = ({ lang }: { lang: string }) => {
 
   useEffect(() => {
     mutate();
-  }, [session_id_search]);
+  }, [session_id]);
   // 
   return (
     <div className="p-2">
@@ -64,8 +63,7 @@ export const SidebarConversations = ({ lang }: { lang: string }) => {
         <HistoryChatItem
           item={item}
           key={item.key}
-          pathName={pathName}
-          session_id_search={session_id_search?.toString() ?? ""}
+          session_id={session_id?.toString() ?? ""}
           lang={lang}
         />
       ))}
@@ -75,13 +73,11 @@ export const SidebarConversations = ({ lang }: { lang: string }) => {
 
 const HistoryChatItem = ({
   item,
-  pathName,
-  session_id_search,
+  session_id,
   lang,
 }: {
   item: IHistoryChatItem;
-  pathName: string;
-  session_id_search: string;
+  session_id: string;
   lang: string;
 }) => {
   return (
@@ -93,7 +89,7 @@ const HistoryChatItem = ({
             href={`/${lang}/bot/${item.bot_id}?session_id=${item.key}`}
             className={cn(
               "hover:text-main py-2 flex gap-2 cursor-pointer text-sm p-2 rounded-md hover:bg-primary/20 transition-all duration-300",
-              session_id_search == item.key && "text-main bg-primary/20"
+              session_id == item.key && "text-main bg-primary/20"
             )}
             key={index}
           >

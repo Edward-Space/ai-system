@@ -8,6 +8,8 @@ import { Logo } from "./Logo";
 import { SidebarMenuFeatures } from "../sidebar/SidbarMenuFeatures";
 import { SidebarAction } from "../sidebar/SidebarAction";
 import { SidebarConversations } from "./SidebarConversations";
+import ClientOnly from "../common/ClientOnly";
+import { Suspense } from "react";
 
 export function AppSidebar({ lang }: { lang: string }) {
   return (
@@ -17,14 +19,14 @@ export function AppSidebar({ lang }: { lang: string }) {
       </SidebarHeader>
       {/*  */}
       <SidebarContent className="hide-scrollbar h-full px-1 flex flex-col gap-5 ">
-        <SidebarAction/>
+        <SidebarAction />
         <SidebarMenuFeatures lang={lang} />
-        <SidebarConversations lang={lang}/>
+        <Suspense>
+          <SidebarConversations lang={lang} />
+        </Suspense>
       </SidebarContent>
       {/*  */}
-      <SidebarFooter className="p-2 border-t border-gray-200 dark:border-gray-800">
-       
-      </SidebarFooter>
+      <SidebarFooter className="p-2 border-t border-gray-200 dark:border-gray-800"></SidebarFooter>
     </Sidebar>
   );
 }

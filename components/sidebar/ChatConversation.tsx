@@ -1,6 +1,6 @@
 "use client";
 
-import { Message } from "@/model/chat";
+import { IMessage } from "@/model/chat";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { BotMessageSquare, MessageSquare } from "lucide-react";
@@ -8,7 +8,7 @@ import { Separator } from "@radix-ui/react-separator";
 import { ScrollArea } from "../ui/scroll-area";
 
 export const ChatConversation = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
 
   // Lấy lịch sử chat từ localStorage khi component được mount
   useEffect(() => {
