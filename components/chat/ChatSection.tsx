@@ -17,6 +17,7 @@ import { FirstChatCTA } from "./FirstChatCTA";
 import { IBot, IConversation } from "@/model/bot";
 import { useRouter } from "next/navigation";
 import { useSelectModel } from "@/lib/store";
+import { cn } from "@/lib/utils";
 /* ------------------------------------------------------------------------------------ */
 interface IProps {
   type?: "dashboard" | "agent" | "testing";
@@ -279,12 +280,12 @@ export default function ChatSection({
   }, [conversations]);
   /* ------------------------------------------------------------------------------------ */
   return (
-    <div className="flex-1  h-[calc(100vh-160px)] lg:h-[calc(100vh-120px)] flex flex-col justify-between ">
+    <div className={cn('flex flex-1 flex-col items-center justify-center  w-full', {
+      'h-[calc(100vh-100px)]': type !=='testing',
+      'h-[calc(100vh-280px)]': type ==='testing',
+    })}>
       {/* Chat Space */}
-      <ScrollArea
-        ref={scrollRef}
-        className="max-h-[calc(100vh-400px)] lg:max-h-[calc(100vh-300px)] pb-4 lg:p-4 "
-      >
+      <ScrollArea ref={scrollRef} className="h-[80%] pb-4 lg:p-4 w-full ">
         <div className="space-y-6 transition-all duration-300">
           {messages.length === 0 && !streamingState.isStreaming && (
             <div className="animate-fade-in">
@@ -316,7 +317,7 @@ export default function ChatSection({
         </div>
       </ScrollArea>
       {/* Input Space */}
-      <div className="max-h-[200px] py-2 flex justify-end items-end w-full">
+      <div className="h-auto flex items-end  pb-5 w-full">
         <div className="max-w-5xl w-full mx-auto">
           <form
             onSubmit={handleSubmit(onSubmit)}

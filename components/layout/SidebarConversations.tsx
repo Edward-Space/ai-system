@@ -95,7 +95,7 @@ const HistoryChatItem = ({
           >
             <div className="flex items-center justify-between">
               {item.title.length > 30
-                ? item.title.slice(0, 30) + "..."
+                ? item.title.slice(0, 25) + "..."
                 : item.title}
             </div>
           </Link>
