@@ -1,11 +1,15 @@
 import { TFetchHeaders, TParams } from "@/model";
-
+import {deleteCookie} from 'cookies-next/client'
 const STORE_TOKEN = process.env.NEXT_PUBLIC_STORE_TOKEN;
 const BASE_URL  = process.env.NEXT_PUBLIC_API_URL
 export const funcUtils = {
   // Lấy token từ localStorage nếu ở client-side, hoặc từ biến môi trường
   getToken: () => {
     return STORE_TOKEN || "";
+  },
+
+  removeToken: () => {
+    deleteCookie('token')
   },
 
   fetchHeader: (token?: string) => {
@@ -17,11 +21,9 @@ export const funcUtils = {
         "Content-Type": "application/json",
         "x-api-key": store_token,
         Authorization: `Bearer ${token ?? store_token}`,
-        // 'Server-time': new Date().toISOString(),
       },
     } as TFetchHeaders;
 
-    // console.log('%c FETCH', 'color: red;', fetchHeaders);
     return fetchHeaders;
   },
 

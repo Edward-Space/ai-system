@@ -1,7 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { IMessage } from "@/model/chat";
-import { MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -13,20 +13,11 @@ export const RenderMessage = ({ message }: { message: IMessage }) => {
   return (
     <div key={message.id} className={`mb-8 max-w-5xl mx-auto`}>
       <div
-        className={`flex items-start gap-3 mb-2 ${
+        className={`flex items-start gap-3 mb-2  ${
           isUser ? "flex-row-reverse justify-start" : "flex-row"
         }`}
       >
-        {isUser ? (
-          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 text-sm font-medium">
-            B
-          </div>
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-300">
-            <MessageSquare className="h-4 w-4" />
-          </div>
-        )}
-        <div className={`max-w-[80%]`}>
+        <div className={`max-w-[100%]`}>
           <div
             className={`font-medium mb-1 ${
               isUser ? "text-right" : "text-left"
@@ -37,7 +28,14 @@ export const RenderMessage = ({ message }: { message: IMessage }) => {
               {new Date(message.timestamp).toLocaleTimeString()}
             </span>
           </div>
-          <div id="markdown-render" className="prose prose-sm dark:prose-invert max-w-none flex flex-col gap-5">
+          <div
+            id="markdown-render"
+            className={cn(
+              `prose prose-sm dark:prose-invert max-w-none flex flex-col gap-5 ${
+                isUser && "bg-primary/20 p-4 rounded-[24px]"
+              }`
+            )}
+          >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{

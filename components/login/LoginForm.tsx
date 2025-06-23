@@ -84,7 +84,8 @@ export const LoginForm = () => {
             <Input
               key={idx}
               {...register(e.name)}
-              {...e}
+              placeholder={e.placeholder}
+              type={e.type}
               className="h-12 border-black/20 bg-primary/20 rounded-full"
             />
             {errors[e.name] && (

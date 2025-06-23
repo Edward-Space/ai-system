@@ -1,4 +1,5 @@
 import { RootLayoutComponent } from "@/components/layout/RootLayoutComponent";
+import { ServerAuthGuard } from "@/components/auth/ServerAuthGuard";
 
 export function generateStaticParams() {
   const lang = [{ lang: "vi" }];
@@ -15,5 +16,9 @@ export default async function RootLayout({
   /* ------------------------------------------------------------------------------------ */
   const { lang } = await params;
   /* ------------------------------------------------------------------------------------ */
-  return <RootLayoutComponent lang={lang}>{children}</RootLayoutComponent>;
+  return (
+    <ServerAuthGuard lang={lang}>
+      <RootLayoutComponent lang={lang}>{children}</RootLayoutComponent>
+    </ServerAuthGuard>
+  );
 }
