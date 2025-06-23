@@ -107,10 +107,10 @@ export const CreateBotModal = () => {
     <Dialog onOpenChange={setIsOpen} open={isOpen}>
       <DialogTrigger className="bg-primary/80 px-4 py-1 rounded-full text-white text-sm flex gap-2 justify-center items-center cursor-pointer hover:bg-primary">
         <PlusCircle />
-        <span> Create Bot</span>
+        <span>Tạo Bot</span>
       </DialogTrigger>
       <DialogContent className="rounded-xl">
-        <DialogTitle>Create Bot</DialogTitle>
+        <DialogTitle>Tạo Bot</DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)} className="h-full">
           <div className="flex flex-col gap-5 w-full">
             <AvatarUpload size="xl" onChange={(file) => setAvatar(file)} />
@@ -141,7 +141,7 @@ export const CreateBotModal = () => {
               type="submit"
               className="w-full rounded-full h-12 flex gap-2 items-center"
             >
-              {isLoading && <LoaderCircle className="animate-spin" />} Đăng Nhập
+              {isLoading && <LoaderCircle className="animate-spin" />} Tạo Bot
             </Button>
           </div>
         </form>

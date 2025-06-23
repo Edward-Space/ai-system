@@ -7,15 +7,6 @@ export const ListBot = ({ bots }: { bots: IBot[] }) => {
       {bots.map((bot, idx) => (
         <BotItem bot={bot} key={idx} />
       ))}
-       {bots.map((bot, idx) => (
-        <BotItem bot={bot} key={idx} />
-      ))}
-       {bots.map((bot, idx) => (
-        <BotItem bot={bot} key={idx} />
-      ))}
-       {bots.map((bot, idx) => (
-        <BotItem bot={bot} key={idx} />
-      ))}
     </div>
   );
 };

@@ -7,9 +7,15 @@ export const loginSchema = z.object({
 });
 export type TLoginSchema = z.infer<typeof loginSchema>;
 
-
 export const createBotSchema = z.object({
   name: FORM_DATA_SCHEMA.full_name,
   description: z.string().optional(),
 });
 export type TCreateBotSchema = z.infer<typeof createBotSchema>;
+
+export const createKnowledgeSchema = z.object({
+  name: FORM_DATA_SCHEMA.full_name,
+  description: z.string().optional(),
+  import_type: z.string().optional(),
+});
+export type TCreateKnowledgeSchema = z.infer<typeof createKnowledgeSchema>;

@@ -17,7 +17,7 @@ import { FirstChatCTA } from "./FirstChatCTA";
 import { IBot, IConversation } from "@/model/bot";
 import { useRouter } from "next/navigation";
 import { useSelectModel } from "@/lib/store";
-
+/* ------------------------------------------------------------------------------------ */
 interface IProps {
   type?: "dashboard" | "agent" | "testing";
   bot?: IBot;
@@ -25,18 +25,18 @@ interface IProps {
   session_id?: string;
   lang?: string;
 }
-
+/* ------------------------------------------------------------------------------------ */
 export default function ChatSection({
   type = "dashboard",
   bot,
   conversations,
   session_id,
-  lang,
 }: IProps) {
+  /* ------------------------------------------------------------------------------------ */
   const route = useRouter();
-  //
+  /* ------------------------------------------------------------------------------------ */
   const { selectedModel } = useSelectModel();
-  //
+  /* ------------------------------------------------------------------------------------ */
   const { register, handleSubmit, reset, watch } = useForm<FormData>();
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [streamingContent, setStreamingContent] = useState<string>("");
@@ -49,7 +49,7 @@ export default function ChatSection({
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const promptValue = watch("prompt");
-  // Parse and render LLM output into blocks
+  /* ------------------------------------------------------------------------------------ */
   const { blockMatches } = useLLMOutput({
     llmOutput: streamingContent,
     isStreamFinished,
@@ -58,6 +58,7 @@ export default function ChatSection({
       lookBack: markdownLookBack(),
     },
   });
+  /* ------------------------------------------------------------------------------------ */
   // Hủy request khi cần
   const cancelStream = () => {
     if (abortControllerRef.current) {
@@ -225,14 +226,7 @@ export default function ChatSection({
       abortControllerRef.current = null;
     }
   };
-  // Xóa lịch sử chat
-  const clearChatHistory = () => {
-    if (streamingState.isStreaming) {
-      cancelStream();
-    }
-    setMessages([]);
-    localStorage.removeItem("chatMessages");
-  };
+  /* ------------------------------------------------------------------------------------ */
   // Auto-scroll on new messages với animation mượt mà
   useEffect(() => {
     if (scrollRef.current) {
@@ -283,85 +277,85 @@ export default function ChatSection({
     //
     setMessages(history);
   }, [conversations]);
+  /* ------------------------------------------------------------------------------------ */
   return (
-    <div className="flex h-full">
-      {/* Khu vực chính - Nội dung chat */}
-      <div className="flex-1 flex flex-col justify-between ">
-        {/* Chat content với animation */}
-        <ScrollArea ref={scrollRef} className="max-h-[calc(100vh-300px)] p-4 ">
-          <div className="space-y-6 transition-all duration-300">
-            {messages.length === 0 && !streamingState.isStreaming && (
-              <div className="animate-fade-in">
-                <FirstChatCTA />
-              </div>
-            )}
-            {/* Hiển thị tin nhắn với animation */}
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <RenderMessage message={message} />
-              </div>
-            ))}
-            {/* Hiển thị nội dung đang streaming với animation */}
-            {streamingState.isStreaming && (
-              <div className="animate-fade-in">
-                <LoadingStreaming blockMatches={blockMatches} />
-              </div>
-            )}
-            {/* Hiển thị lỗi nếu có */}
-            {streamingState.isError && (
-              <div className="animate-fade-in">
-                <ErrorStreaming streamingState={streamingState} />
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-
-        {/* Input area */}
-        <div className="border-t border-gray-200 dark:border-gray-800 p-4 ">
-          <div className="max-w-5xl mx-auto">
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col w-full gap-2"
+    <div className="flex-1  h-[calc(100vh-160px)] lg:h-[calc(100vh-120px)] flex flex-col justify-between ">
+      {/* Chat Space */}
+      <ScrollArea
+        ref={scrollRef}
+        className="max-h-[calc(100vh-400px)] lg:max-h-[calc(100vh-300px)] pb-4 lg:p-4 "
+      >
+        <div className="space-y-6 transition-all duration-300">
+          {messages.length === 0 && !streamingState.isStreaming && (
+            <div className="animate-fade-in">
+              <FirstChatCTA />
+            </div>
+          )}
+          {/* Hiển thị tin nhắn với animation */}
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="flex flex-col gap-2 relative bg-secondary py-2 px-3  border border-gray-200  rounded-[24px] overflow-hidden shadow-sm">
-                <AutoResizeTextarea
-                  {...register("prompt", { required: true })}
-                  placeholder="Nhập tin nhắn của bạn..."
-                  style={{ resize: "none" }}
-                  className="flex-1 min-h-[98px] py-4  border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  disabled={streamingState.isStreaming}
-                />
+              <RenderMessage message={message} />
+            </div>
+          ))}
+          {/* Hiển thị nội dung đang streaming với animation */}
+          {streamingState.isStreaming && (
+            <div className="animate-fade-in">
+              <LoadingStreaming blockMatches={blockMatches} />
+            </div>
+          )}
+          {/* Hiển thị lỗi nếu có */}
+          {streamingState.isError && (
+            <div className="animate-fade-in">
+              <ErrorStreaming streamingState={streamingState} />
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+      {/* Input Space */}
+      <div className="max-h-[200px] py-2 flex justify-end items-end w-full">
+        <div className="max-w-5xl w-full mx-auto">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col w-full gap-2"
+          >
+            <div className="flex flex-col gap-2 relative bg-secondary py-2 px-3  border border-gray-200  rounded-[24px] overflow-hidden shadow-sm">
+              <AutoResizeTextarea
+                {...register("prompt", { required: true })}
+                placeholder="Nhập tin nhắn của bạn..."
+                style={{ resize: "none" }}
+                className="flex-1 min-h-[54px] py-4  border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                disabled={streamingState.isStreaming}
+              />
 
-                <div className="flex items-center justify-end">
-                  {streamingState.isStreaming ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={cancelStream}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 [&_svg:not([class*='size-'])]:size-7 size-10"
-                    >
-                      <X className="h-7  w-7 " />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      size="icon"
-                      variant="ghost"
-                      className="text-blue-500 hover:text-blue-600 bg-white cursor-pointer border rounded-full [&_svg:not([class*='size-'])]:size-5 size-10"
-                      disabled={!promptValue?.trim()}
-                    >
-                      <Send className="h-7 w-7" />
-                    </Button>
-                  )}
-                </div>
+              <div className="flex items-center justify-end">
+                {streamingState.isStreaming ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={cancelStream}
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 [&_svg:not([class*='size-'])]:size-7 size-10"
+                  >
+                    <X className="h-7  w-7 " />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    size="icon"
+                    variant="ghost"
+                    className="text-blue-500 hover:text-blue-600 bg-white cursor-pointer border rounded-full [&_svg:not([class*='size-'])]:size-5 size-10"
+                    disabled={!promptValue?.trim()}
+                  >
+                    <Send className="h-7 w-7" />
+                  </Button>
+                )}
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>

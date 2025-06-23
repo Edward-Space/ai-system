@@ -15,7 +15,7 @@ const MENU_ITEMS = [
   },
   {
     label: "Quản lý Knowledge",
-    href: "/knowledge",
+    href: "/management-knowledge",
     icon: <Brain className="group-data-[collapsible=icon]:size-6 size-5"/>,
   },
 ];
