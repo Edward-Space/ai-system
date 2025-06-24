@@ -6,7 +6,9 @@ import { Input } from "../ui/input";
 import { ScrollArea } from "../ui/scroll-area";
 
 export const ListBotSection = () => {
+  /* ------------------------------------------------------------------------------------ */
   const { data, isLoading } = useGetListBot();
+  /* ------------------------------------------------------------------------------------ */
   return (
     <div className="flex flex-col gap-5 items-center justify-center w-full">
       <div className="w-full flex flex-col gap-3 justify-center max-w-[800px] text-center">
@@ -22,7 +24,7 @@ export const ListBotSection = () => {
       <ScrollArea className=" h-[600px] w-full">
         {isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 w-full ">
-            {[1, 2, 3, 4, 5, 6,7, 8].map((e) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((e) => (
               <div
                 className="w-full aspect-square  rounded-xl bg-primary/20 animate-pulse"
                 key={e}
