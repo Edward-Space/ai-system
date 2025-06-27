@@ -35,7 +35,7 @@ export const HeaderChat = ({ type = "dashboard", bot }: IProps) => {
 /* ------------------------------------------------------------------------------------ */
 const HeaderChatHome = React.memo(() => {
   const { data } = useGetModels();
-  const token = getCookie("token");
+  const token = getCookie("access_token");
   const { setSelectedModel } = useSelectModel();
   /* ------------------------------------------------------------------------------------ */
   useEffect(() => {

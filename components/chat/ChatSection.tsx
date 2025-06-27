@@ -131,6 +131,7 @@ export default function ChatSection({
           },
           body: JSON.stringify(payload),
           signal,
+          credentials: "include", // Tương đương withCredentials: true trong axios
         }
       );
 
@@ -238,7 +239,7 @@ export default function ChatSection({
         behavior: "smooth",
       });
     }
-  }, [messages, streamingContent]);
+  }, [messages]);
   // Lưu tin nhắn vào localStorage khi messages thay đổi
   useEffect(() => {
     if (messages.length > 0) {
@@ -280,12 +281,17 @@ export default function ChatSection({
   }, [conversations]);
   /* ------------------------------------------------------------------------------------ */
   return (
-    <div className={cn('flex flex-1 flex-col items-center justify-center  w-full', {
-      'h-[calc(100vh-100px)]': type !=='testing',
-      'h-[calc(100vh-280px)]': type ==='testing',
-    })}>
+    <div
+      className={cn(
+        "flex flex-1 flex-col items-center justify-center  w-full",
+        {
+          "h-[calc(100vh-100px)]": type !== "testing",
+          "h-[calc(100vh-280px)]": type === "testing",
+        }
+      )}
+    >
       {/* Chat Space */}
-      <ScrollArea ref={scrollRef} className="h-[80%] pb-4 lg:p-4 w-full ">
+      <ScrollArea ref={scrollRef} className="h-[80%] pb-4 lg:p-4 w-full chat-scroll">
         <div className="space-y-6 transition-all duration-300">
           {messages.length === 0 && !streamingState.isStreaming && (
             <div className="animate-fade-in">
@@ -295,16 +301,16 @@ export default function ChatSection({
           {/* Hiển thị tin nhắn với animation */}
           {messages.map((message, index) => (
             <div
-              key={index}
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              key={message.id || index}
+              className="animate-fade-in streaming-content"
+              style={{ animationDelay: `${index * 0.05}s` }}
             >
               <RenderMessage message={message} />
             </div>
           ))}
           {/* Hiển thị nội dung đang streaming với animation */}
           {streamingState.isStreaming && (
-            <div className="animate-fade-in">
+            <div className="animate-fade-in streaming-content">
               <LoadingStreaming blockMatches={blockMatches} />
             </div>
           )}

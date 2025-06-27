@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const token = request.cookies.get('token')?.value
+  const token = request.cookies.get('access_token')?.value
 
   // Check if the path is for auth pages (login)
   const isAuthPage = pathname.includes('/login')
