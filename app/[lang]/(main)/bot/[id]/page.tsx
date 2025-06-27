@@ -32,19 +32,22 @@ export default async function BotIdPage({
   /* ------------------------------------------------------------------------------------ */
   const { id, lang } = await params;
   const { session_id } = await searchParams;
+  console.log(session_id);
+  
   /* ------------------------------------------------------------------------------------ */
-  const { bot, conversation } = await getData({
-    id: id,
-    session_id: `${session_id}`,
-  });
+  const bot = await GET<{ data: IBot }>("/api/v1/bots/" + id);
+  const conversation =
+    session_id &&
+    (await GET<{ data: IConversation }>("/api/v1/conversations/" + session_id));
   /* ------------------------------------------------------------------------------------ */
   return (
     <div className="h-[calc(100vh-60px)] overflow-y-hidden w-full">
-      <HeaderChat type="agent" bot={bot} />
+      <HeaderChat type="agent" bot={bot?.data} />
       <ChatSection
         lang={lang}
-        bot={bot}
-        conversations={conversation}
+        bot={bot?.data}
+        {...(session_id &&
+          conversation && { conversations: conversation?.data })}
         session_id={session_id && `${session_id}`}
       />
     </div>

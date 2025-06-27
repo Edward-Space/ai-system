@@ -85,27 +85,55 @@ pnpm start
 
 ## API Services
 
-Dự án sử dụng Axios để gọi API từ server và SWR để gọi API từ client.
+Dự án sử dụng Axios với cấu hình tự động credentials và SWR để gọi API.
 
 ### Server-side API (Axios)
 
-Sử dụng `apiService` để gọi API từ server-side:
+Sử dụng các methods từ `service/api.ts` với axios đã được cấu hình:
 
 ```typescript
-import apiService from '@/service';
+import { GET, POST, PUT, PATCH, DELETE } from '@/service/api';
 import { User } from '@/model';
 
 // GET request
-const users = await apiService.get<User[]>('/users');
+const users = await GET<User[]>('/api/v1/users');
 
 // POST request
-const newUser = await apiService.post<User>('/users', { name: 'John Doe', email: 'john@example.com' });
+const newUser = await POST<User>('/api/v1/users', { 
+  name: 'John Doe', 
+  email: 'john@example.com' 
+});
 
 // PUT request
-const updatedUser = await apiService.put<User>(`/users/${userId}`, { name: 'Jane Doe' });
+const updatedUser = await PUT<User>(`/api/v1/users/${userId}`, { 
+  name: 'Jane Doe' 
+});
+
+// PATCH request
+const patchedUser = await PATCH<User>(`/api/v1/users/${userId}`, { 
+  name: 'Updated Name' 
+});
 
 // DELETE request
-const deletedUser = await apiService.delete<User>(`/users/${userId}`);
+await DELETE(`/api/v1/users/${userId}`);
+```
+
+**Tính năng Axios:**
+- ✅ Tự động thêm `Authorization` header với Bearer token
+- ✅ Tự động gửi cookies với `withCredentials: true`
+- ✅ Error handling tự động (401 → redirect login)
+- ✅ Support cả server-side và client-side
+- ✅ TypeScript support với generics
+
+**Sử dụng trực tiếp axios instance:**
+```typescript
+import { apiClient } from '@/lib/axios';
+
+// Custom request với config
+const response = await apiClient.get('/api/v1/data', {
+  params: { page: 1, limit: 10 },
+  timeout: 5000
+});
 ```
 
 ### Client-side API (SWR)

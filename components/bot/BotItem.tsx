@@ -18,7 +18,7 @@ export const BotItem = ({ bot }: { bot: IBot }) => {
           <div className="w-8 aspect-square rounded-full bg-primary/20"></div>
           <span>Huỳnh Tấn Phát</span>
         </div>
-        <Link href={'/'}><Edit/></Link>
+        <Link href={'/vi/management-bot/' + bot.id}><Edit/></Link>
       </div>
     </div>
   );

@@ -19,7 +19,6 @@ export const funcUtils = {
     const fetchHeaders = {
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": store_token,
         Authorization: `Bearer ${token ?? store_token}`,
       },
     } as TFetchHeaders;

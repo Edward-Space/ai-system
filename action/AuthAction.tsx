@@ -1,40 +1,60 @@
 "use server";
+import axiosInstance from "@/lib/axios";
 import { IResponseLogin } from "@/model/auth";
-import { getCookie } from "cookies-next/server";
+import { getCookie, deleteCookie } from "cookies-next/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 const oneDay = 60 * 60 * 24;
 
 export async function actionLogin(resp: IResponseLogin) {
   const cookie = await cookies();
   cookie.set({
-    name: "token",
+    name: "access_token",
     value: resp.access_token,
+    path: "/",
+    maxAge: oneDay,
+  });
+  cookie.set({
+    name: "refresh_token",
+    value: resp.refresh_token,
     path: "/",
     maxAge: oneDay,
   });
 }
 
 export async function getTokenUser() {
-  if (typeof window !== 'undefined') {
-    // Client-side: get from document.cookie
-    const cookies = document.cookie.split(';')
-    const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('token='))
-    return tokenCookie ? tokenCookie.split('=')[1] : null
-  } else {
-    // Server-side: use getCookie
-    const token = await getCookie("token", { cookies });
-    return token;
-  }
+  const token = await getCookie("access_token", { cookies });
+  return token;
 }
 
 export async function logout() {
   try {
-    if (typeof window !== 'undefined') {
+    // Get current token
+    const token = await getTokenUser();
+    console.log("hê", token);
+
+    if (token) {
+      // Call logout API
+      try {
+        // const response = await axiosInstance.post("/api/v1/auth/logout", {
+        //   token: token,
+        // });
+        // console.log("Logout API call success:", response);
+        deleteCookie("access_token", { cookies });
+        deleteCookie("refresh_token", { cookies });
+        // Continue with token removal even if API call fails
+        // to ensure user is logged out locally
+      } catch (apiError) {
+        console.warn("Logout API call failed:", apiError);
+        // Continue with local logout
+      }
+    }
+
+    if (typeof window !== "undefined") {
       // Client-side: remove cookie via document.cookie
-      document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
-      return true
+      document.cookie =
+        "token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+      return true;
     } else {
       // Server-side: use cookies API
       const cookie = await cookies();
@@ -42,6 +62,7 @@ export async function logout() {
       return true;
     }
   } catch (e) {
+    console.error("Logout error:", e);
     return false;
   }
 }
