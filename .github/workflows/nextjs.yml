@@ -21,22 +21,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 1. Cài Node.js và bật cache pnpm
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "pnpm"
 
+      # 2. Cài pnpm chính thức trước khi gọi bất kỳ lệnh pnpm nào
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8  # hoặc để mặc định nếu bạn muốn dùng bản pnpm mới nhất
-
+          version: 8   # hoặc để trống để lấy latest
+      
+      # 3. Thiết lập GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           static_site_generator: next
 
+      # 4. Cache pnpm store để tăng tốc cài lại dependencies
       - name: Restore pnpm store cache
         uses: actions/cache@v4
         with:
@@ -45,15 +49,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      # 5. Cài dependencies
       - name: Install dependencies with pnpm
         run: pnpm install --frozen-lockfile --store ~/.pnpm-store
 
+      # 6. Build và xuất static site
       - name: Build with Next.js
         run: pnpm exec next build
 
       - name: Export static site
         run: pnpm exec next export --outdir out
 
+      # 7. Upload artifact để deploy
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
