@@ -4,21 +4,10 @@ import { useGetListBot } from "@/swr/useGetListBot";
 import { ListBot } from "./ListBot";
 import { Input } from "../ui/input";
 import { ScrollArea } from "../ui/scroll-area";
-import { useEffect } from "react";
-import { IBot } from "@/model/bot";
-import { GET } from "@/service/api";
 
 export const ListBotSection = () => {
   /* ------------------------------------------------------------------------------------ */
   const { data, isLoading } = useGetListBot();
-
-  useEffect( () =>{
-    const hello = async() =>{
-      const res = await GET<{ data: IBot }>("/api/v1/bots/" + '685ea89086e61611b4833823')
-    }
-
-    hello()
-  },[])
   /* ------------------------------------------------------------------------------------ */
   return (
     <div className="flex flex-col gap-5 items-center justify-center w-full">

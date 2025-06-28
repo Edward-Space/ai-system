@@ -1,6 +1,6 @@
 import { funcUtils } from "@/lib/funcUtils";
 import { TOptionHook, TResponseData } from "@/model";
-import { IBot, ICategory } from "@/model/bot";
+import { ICategory } from "@/model/bot";
 import useSWR from "swr";
 import { getCookie } from "cookies-next/client";
 export const useGetCategory = (option?: TOptionHook<any>) => {

@@ -14,7 +14,7 @@ export const DetailBotPrompt = React.memo(
     return (
       <div className="w-full rounded-xl border ">
         <Textarea
-          className=" h-[83vh]  overflow-y-scroll p-5"
+          className=" h-[82vh]  overflow-y-scroll p-5"
           value={bot.system_prompt}
           onChange={(e) => onChange(e.target.value)}
         />

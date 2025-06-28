@@ -4,26 +4,14 @@ import { IBot } from "@/model/bot";
 import useSWR from "swr";
 import { getCookie } from "cookies-next/client";
 import { SWR_KEYS } from "@/lib/swr-key";
-import axiosInstance, { apiClient } from "@/lib/axios";
+import axiosInstance from "@/lib/axios";
 export const useGetListBot = (option?: TOptionHook<any>) => {
   const { config, isFetch = true, params } = option ?? {};
-  //
-  const token = getCookie("token");
   //
   const fetcher = async () => {
     const urlAPi = funcUtils.combineUrl("/api/v1/bots", params);
     try {
       const rest = await axiosInstance.get(urlAPi)
-      // const res = await fetch(urlAPi, {
-      //   method: "GET",
-      //   credentials: "include",
-      //   ...funcUtils.fetchHeader(token),
-      // });
-
-      // if (!res.ok) {
-      //   console.error("Error fetching data:", res.statusText);
-      //   throw new Error(res.statusText);
-      // }
 
       const data: TResponseData<IBot[]> = rest.data;
 
