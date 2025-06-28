@@ -22,26 +22,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Cài Node.js, bật cache cho pnpm
+      # 2. Cài Node.js và bật cache cho pnpm
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "pnpm"
 
-      # 3. Cài pnpm vào PATH (bắt buộc)
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      # 3. Cài pnpm thủ công để đảm bảo luôn có trong PATH
+      - name: Install pnpm globally
+        run: npm install -g pnpm
 
-      # 4. Thiết lập GitHub Pages
+      # 4. Kiểm tra pnpm
+      - name: Verify pnpm
+        run: |
+          echo "pnpm version: $(pnpm --version)"
+          which pnpm
+
+      # 5. Thiết lập GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           static_site_generator: next
 
-      # 5. Khôi phục cache pnpm store để tăng tốc install
+      # 6. Cache pnpm store để tăng tốc cài lại dependencies
       - name: Restore pnpm store cache
         uses: actions/cache@v4
         with:
@@ -50,19 +54,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      # 6. Cài dependencies qua pnpm
+      # 7. Cài dependencies qua pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --store ~/.pnpm-store
 
-      # 7. Build Next.js
+      # 8. Build Next.js
       - name: Build with Next.js
         run: pnpm exec next build
 
-      # 8. Xuất static site ra thư mục out
+      # 9. Xuất static site ra thư mục out
       - name: Export static site
         run: pnpm exec next export --outdir out
 
-      # 9. Upload artifact để deploy
+      # 10. Upload artifact để deploy
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
