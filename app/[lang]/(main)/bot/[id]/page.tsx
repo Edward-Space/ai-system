@@ -46,6 +46,7 @@ export default async function BotIdPage({
       <ChatSection
         lang={lang}
         bot={bot?.data}
+        type="agent"
         {...(session_id &&
           conversation && { conversations: conversation?.data })}
         session_id={session_id && `${session_id}`}

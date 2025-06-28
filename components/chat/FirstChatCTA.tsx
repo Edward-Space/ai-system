@@ -1,11 +1,5 @@
-import { Button } from "../ui/button";
 
-const introChat = [
 
-  {
-    title:''
-  }
-]
 
 export const FirstChatCTA = () => {
   return (

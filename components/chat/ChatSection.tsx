@@ -5,7 +5,7 @@ import { useLLMOutput } from "@llm-ui/react";
 import { markdownLookBack } from "@llm-ui/markdown";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowUp, Send, X } from "lucide-react";
+import { ArrowUp, X } from "lucide-react";
 import { MarkdownComponent } from "./MarkdownComponent";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { FormData, IMessage, StreamingState } from "@/model/chat";
@@ -19,6 +19,11 @@ import { useRouter } from "next/navigation";
 import { useSelectModel } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import FileUpload from "./FileUpload";
+import { funcUtils } from "@/lib/funcUtils";
+/* ------------------------------------------------------------------------------------ */
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const dashboard = "/api/v1/chat/dashboard/sse";
+const other = "/api/v1/chat/sse";
 /* ------------------------------------------------------------------------------------ */
 interface IProps {
   type?: "dashboard" | "agent" | "testing";
@@ -83,19 +88,23 @@ export default function ChatSection({
     if (abortControllerRef.current) {
       cancelStream();
     }
-    
+
     // Tạo nội dung tin nhắn bao gồm text và thông tin files
     let messageContent = userPrompt;
     if (selectedImages.length > 0 || selectedFiles.length > 0) {
       messageContent += "\n\n";
       if (selectedImages.length > 0) {
-        messageContent += `📷 Images: ${selectedImages.map(img => img.name).join(", ")}\n`;
+        messageContent += `📷 Images: ${selectedImages
+          .map((img) => img.name)
+          .join(", ")}\n`;
       }
       if (selectedFiles.length > 0) {
-        messageContent += `📎 Files: ${selectedFiles.map(file => file.name).join(", ")}`;
+        messageContent += `📎 Files: ${selectedFiles
+          .map((file) => file.name)
+          .join(", ")}`;
       }
     }
-    
+
     // Thêm tin nhắn người dùng với ID và timestamp
     setMessages((prev) => [
       ...prev,
@@ -106,7 +115,7 @@ export default function ChatSection({
         timestamp: Date.now(),
       },
     ]);
-    
+
     // Reset form và files
     reset();
     setSelectedFiles([]);
@@ -128,26 +137,23 @@ export default function ChatSection({
 
     try {
       const payload = {
-        bot: bot,
         bot_id: bot?.id,
         generative_model: selectedModel?.model_id ?? "google/gemini-2.5-pro",
         session_id: session_id,
-        ...(type != "agent" && { type: type }),
-        ...(type !== "dashboard" && {
-          system_prompt: bot?.system_prompt ?? "",
-        }),
         prompt: userPrompt,
+        //
+        ...(type == "testing" && { bot: bot }),
+        ...(type != "agent" && { type: type }),
       };
 
       // Gọi API với signal để có thể hủy
       const response = await fetch(
-        "https://api-gateway.newweb.vn/api/v1/chat/dashboard/sse",
+        `${BASE_URL}${type == "dashboard" ? dashboard : other}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4M2QwMDQyNTZlMWY4MWQzNzUwMGQ4OSIsInVzZXJfaWQiOiIiLCJ0ZWFtX2lkIjoiNjgzYTdjNTBiNTYxZGI1ZmVlNDZjODcxIiwicGhvbmVfbnVtYmVyIjoiMDkxNjIxNTE4MCIsImVtYWlsIjoicGhhdEBnbWFpbC5jb20iLCJ1c2VybmFtZSI6InBoYXQiLCJpc3MiOiJiZjIyMzkwNy05NDg1LTRhNmYtODU2Zi00Yzg5MzAyYzA4NzQiLCJzdWIiOiI2ODNkMDA0MjU2ZTFmODFkMzc1MDBkODkiLCJleHAiOjE3NTAzODcxMzEsIm5iZiI6MTc1MDMwMDczMSwiaWF0IjoxNzUwMzAwNzMxfQ.aLZsFz3krUd64rLLLmR8RZ488jm-6piav6TSBx1o7Os",
+            Authorization: "Bearer " + funcUtils.getToken(),
           },
           body: JSON.stringify(payload),
           signal,
@@ -313,7 +319,11 @@ export default function ChatSection({
       {/* Chat Space */}
       <ScrollArea
         ref={scrollRef}
-        className={`${selectedFiles.length >0 || selectedImages.length>0 ? 'h-[70%]':'h-[80%]'} pb-4 lg:p-4 w-full chat-scroll`}
+        className={`${
+          selectedFiles.length > 0 || selectedImages.length > 0
+            ? "h-[70%]"
+            : "h-[80%]"
+        } pb-4 lg:p-4 w-full chat-scroll`}
       >
         <div className="space-y-6 transition-all duration-300">
           {messages.length === 0 && !streamingState.isStreaming && (
@@ -368,7 +378,9 @@ export default function ChatSection({
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedImages(prev => prev.filter((_, i) => i !== index));
+                        setSelectedImages((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
                       }}
                       className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                     >
@@ -385,13 +397,15 @@ export default function ChatSection({
                     <div className="w-32 h-16 rounded-lg  bg-white dark:bg-gray-700 flex flex-col items-center justify-center p-2">
                       <div className="text-2xl mb-1">📄</div>
                       <div className="text-xs text-center truncate w-full">
-                        {file.name.split('.').pop()?.toUpperCase()}
+                        {file.name.split(".").pop()?.toUpperCase()}
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+                        setSelectedFiles((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
                       }}
                       className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                     >
