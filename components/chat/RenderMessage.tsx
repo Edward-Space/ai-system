@@ -31,80 +31,13 @@ export const RenderMessage = ({ message }: { message: IMessage }) => {
             id="markdown-render"
             className={cn(
               `prose prose-sm dark:prose-invert max-w-none flex flex-col gap-5 ${
-                isUser && "bg-primary/20 p-4 rounded-[24px]"
+                isUser && "bg-primary/20 px-4 py-2 rounded-[24px]"
               }`
             )}
           >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                // code: ({ className, children, ...props }) => {
-                //   const match = /language-(\w+)/.exec(className || "");
-                //   const lang = match ? match[1] : "";
-                //   const codeContent = String(children).replace(/\n$/, "");
-                //   const [highlightedCode, setHighlightedCode] =
-                //     useState<string>("");
-
-                //   useEffect(() => {
-                //     let isMounted = true;
-
-                //     if (lang) {
-                //       codeToHtml(codeContent, {
-                //         lang,
-                //         themes: {
-                //           light: "tokyo-night",
-                //           dark: "github-dark",
-                //         },
-                //         defaultColor: "light",
-                //       })
-                //         .then((html) => {
-                //           if (isMounted) {
-                //             setHighlightedCode(html);
-                //           }
-                //         })
-                //         .catch((err) => {
-                //           console.error("Error highlighting code:", err);
-                //         });
-                //     }
-
-                //     return () => {
-                //       isMounted = false;
-                //     };
-                //   }, [lang, codeContent]);
-
-                //   if (lang) {
-                //     // Sử dụng dangerouslySetInnerHTML để hiển thị HTML được tạo bởi Shiki
-                //     return (
-                //       <div className="shiki-wrapper w-full  my-4">
-                //         <div className="code-header flex justify-between items-center px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-t-md">
-                //           <span className="text-xs font-mono">{lang}</span>
-                //           <button
-                //             className="copy-button text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                //             onClick={() =>
-                //               navigator.clipboard.writeText(codeContent)
-                //             }
-                //           >
-                //             Copy
-                //           </button>
-                //         </div>
-                //         <div
-                //           className="code-block-container bg-black w-full overflow-x-scroll markdown-code "
-                //           dangerouslySetInnerHTML={{
-                //             __html:
-                //               highlightedCode ||
-                //               `<pre class="language-${lang} "><code>${codeContent}</code></pre>`,
-                //           }}
-                //         />
-                //       </div>
-                //     );
-                //   }
-
-                //   return (
-                //     <code className={className} {...props}>
-                //       {children}
-                //     </code>
-                //   );
-                // },
                 code: ({ node, ...props }) => (
                   <CodeBlock {...props} children={props.children || ""} />
                 ),

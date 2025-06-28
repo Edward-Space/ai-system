@@ -15,6 +15,8 @@ import Link from "next/link";
 import ClientOnly from "../common/ClientOnly";
 import { useSelectModel } from "@/lib/store";
 import React, { useEffect } from "react";
+import { ShareModal } from "./ShareModal";
+import { DeleteConversationModal } from "./DeleteConversationModal";
 /* ------------------------------------------------------------------------------------ */
 interface IProps {
   type?: "dashboard" | "agent" | "testing";
@@ -141,24 +143,8 @@ const HeaderChatBot = React.memo(({ bot }: { bot: IBot }) => {
             </SelectContent>
           </Select>
         )}
-        <Button
-          className="rounded-full bg-primary/80 group hover:w-[100px] transition-all duration-300 cursor-pointer"
-          size={"icon"}
-        >
-          <span className="group-hover:block hidden transition-all duration-300">
-            Chia sẻ
-          </span>
-          <Share />
-        </Button>
-        <Button
-          className="rounded-full bg-red-400 group hover:w-[100px] hover:bg-red-500 transition-all duration-300 cursor-pointer"
-          size={"icon"}
-        >
-          <span className="group-hover:block hidden transition-all duration-300">
-            Xóa
-          </span>
-          <Trash />
-        </Button>
+        <ShareModal />
+        <DeleteConversationModal />
       </div>
     </>
   );

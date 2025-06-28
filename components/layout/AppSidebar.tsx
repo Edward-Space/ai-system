@@ -10,10 +10,10 @@ import { SidebarAction } from "../sidebar/SidebarAction";
 import { SidebarConversations } from "./SidebarConversations";
 import { Suspense } from "react";
 import { SidebarSetting } from "./SidebarSetting";
-import { getTokenUser } from "@/action/AuthAction";
+import { getValidToken } from "@/utils/tokenUtils";
 
 export async function AppSidebar({ lang }: { lang: string }) {
-  const token = await getTokenUser();
+  const token = await getValidToken();
   return (
     <>
       {token && (

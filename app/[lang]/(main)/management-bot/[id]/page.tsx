@@ -8,7 +8,7 @@ export default async function ManagementBotIdPage({
 }: {
   params: Promise<{ id: string; lang: string }>;
 }) {
-  const { id, lang } = await params;
+  const { id } = await params;
 
   const bot_detail = await GET<{ data: IBot }>("/api/v1/bots/" + id);
   const llms = await GET<{ data: IModel[] }>('/api/v1/llms')

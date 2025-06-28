@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { getTokenUser } from "@/action/AuthAction"
+import { getValidToken } from "@/utils/tokenUtils"
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -17,10 +17,10 @@ export function AuthGuard({ children, lang }: AuthGuardProps) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = await getTokenUser()
+        const token = await getValidToken() // Sử dụng getValidToken để auto refresh
         
         if (!token) {
-          // Redirect to login if no token
+          // Redirect to login if no valid token
           router.replace(`/${lang}/login`)
           return
         }

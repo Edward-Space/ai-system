@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings } from "lucide-react";
+import { CircleUser, Headset, LogOut,  SettingsIcon } from "lucide-react";
 import { logout } from "@/action/AuthAction";
 import { useRouter } from "next/navigation";
 import {
@@ -22,15 +22,22 @@ export const SidebarSetting = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="py-2 rounded-lg w-fit pr-5 hover:bg-primary/20 transition-all duration-300 px-2 cursor-pointer">
+      <DropdownMenuTrigger className="py-2 rounded-lg w-full pr-5 hover:bg-primary/20 transition-all duration-300 px-2 cursor-pointer">
         <div className="flex gap-2 items-center">
-          <Settings className="group-data-[collapsible=icon]:size-6 size-5" /> <span className="text-sm">Setting</span>
+          <CircleUser className="group-data-[collapsible=icon]:size-6 size-6" />{" "}
+          <span className="text-sm">Huỳnh Tấn Phát</span>
         </div>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent side="right">
-        <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
-          Đăng Xuất
+      <DropdownMenuContent className="w-[200px]" side="top">
+        <DropdownMenuItem className="cursor-pointer py-2">
+          <SettingsIcon  /> Cài đặt
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer py-2">
+          <Headset  /> Hỗ trợ
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer py-2" onClick={handleLogout}>
+          <LogOut /> Đăng Xuất
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

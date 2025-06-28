@@ -27,6 +27,53 @@ export async function getTokenUser() {
   return token;
 }
 
+export async function getRefreshToken() {
+  const refreshToken = await getCookie("refresh_token", { cookies });
+  return refreshToken;
+}
+
+export async function refreshAccessToken() {
+  try {
+    const refreshToken = await getRefreshToken();
+    
+    if (!refreshToken) {
+      throw new Error("No refresh token available");
+    }
+
+    const response = await axiosInstance.post("/api/v1/auth/refresh", {
+      refresh_token: refreshToken,
+    });
+
+    const newTokenData = response.data.data;
+    
+    // Update cookies with new tokens
+    const cookie = await cookies();
+    cookie.set({
+      name: "access_token",
+      value: newTokenData.access_token,
+      path: "/",
+      maxAge: oneDay,
+    });
+    
+    if (newTokenData.refresh_token) {
+      cookie.set({
+        name: "refresh_token",
+        value: newTokenData.refresh_token,
+        path: "/",
+        maxAge: oneDay,
+      });
+    }
+
+    return newTokenData.access_token;
+  } catch (error) {
+    console.error("Token refresh failed:", error);
+    // Clear invalid tokens
+    deleteCookie("access_token", { cookies });
+    deleteCookie("refresh_token", { cookies });
+    throw error;
+  }
+}
+
 export async function logout() {
   try {
     // Get current token

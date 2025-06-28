@@ -45,18 +45,35 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
-    // Xử lý lỗi 401 (Unauthorized)
-    // if (error.response?.status === 401 && !originalRequest?._retry) {
-    //   if (originalRequest) {
-    //     originalRequest._retry = true;
-    //   }
+    // Xử lý lỗi 401 (Unauthorized) - Auto refresh token
+    if (error.response?.status === 401 && !originalRequest?._retry) {
+      if (originalRequest) {
+        originalRequest._retry = true;
+      }
 
-    //   // Có thể thêm logic refresh token ở đây nếu cần
-    //   // Hiện tại chỉ redirect về login
-    //   if (typeof window !== 'undefined') {
-    //     window.location.href = '/vi/login';
-    //   }
-    // }
+      try {
+        // Import dynamically to avoid circular dependency
+        const { refreshAccessToken } = await import('@/action/AuthAction');
+        const newToken = await refreshAccessToken();
+        
+        // Update the original request with new token
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        }
+        
+        // Retry the original request
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+        
+        // Redirect to login if refresh fails
+        if (typeof window !== 'undefined') {
+          window.location.href = '/vi/login';
+        }
+        
+        return Promise.reject(refreshError);
+      }
+    }
 
     // Xử lý các lỗi khác
     if (error.response?.status === 403) {
