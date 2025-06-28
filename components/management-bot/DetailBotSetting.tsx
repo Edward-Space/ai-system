@@ -1,6 +1,6 @@
 "use client";
 
-import { IBot } from "@/model/bot";
+import { IBot, IPropsTextSetting } from "@/model/bot";
 import { IModel } from "@/model/model";
 import { MultiSelect, MultiSelectOption } from "../ui/multi-select";
 import { useEffect, useState } from "react";
@@ -11,12 +11,16 @@ interface IProps {
   bot: IBot;
   models: IModel[];
   handleChangeActiveModel: (active_model: string[]) => void;
+  handleChangeSearchSetting: (token: number) => void;
+  handleChangeTextSetting: (options: IPropsTextSetting) => void;
 }
 
 export const DetailBotSetting = ({
   bot,
   models,
   handleChangeActiveModel,
+  handleChangeSearchSetting,
+  handleChangeTextSetting,
 }: IProps) => {
   /* ------------------------------------------------------------------------------------ */
   const [selectModels, setSelectModels] = useState<string[]>(
@@ -48,14 +52,33 @@ export const DetailBotSetting = ({
         />
       </div>
 
-      <SearchSetting />
-      <TextSetting />
+      <SearchSetting
+        bot={bot}
+        handleChangeSearchSetting={handleChangeSearchSetting}
+      />
+      <TextSetting
+        bot={bot}
+        handleChangeTextSetting={handleChangeTextSetting}
+      />
     </div>
   );
 };
 
-const SearchSetting = () => {
-  const [count, setCount] = useState<number>(1);
+const SearchSetting = ({
+  bot,
+  handleChangeSearchSetting,
+}: {
+  bot: IBot;
+  handleChangeSearchSetting: (token: number) => void;
+}) => {
+  const [count, setCount] = useState<number>(
+    bot.knowledge_parameters.source_chunks
+  );
+
+  useEffect(() => {
+    handleChangeSearchSetting(count);
+  }, [count]);
+  //
   return (
     <div className="flex flex-col gap-5">
       <p className="text-base font-medium capitalize">Search Settings</p>
@@ -80,28 +103,33 @@ const SearchSetting = () => {
   );
 };
 
-const TextSetting = () => {
-  const [count, setCount] = useState<{
-    token: number;
-    heat: number;
-    top_k: number;
-    top_p: number;
-  }>({
-    token: 1000,
-    heat: 0.5,
-    top_k: 4,
-    top_p: 0.5,
-  });
+const TextSetting = ({
+  bot,
+  handleChangeTextSetting,
+}: {
+  bot: IBot;
+  handleChangeTextSetting: (options: IPropsTextSetting) => void;
+}) => {
+  const [count, setCount] = useState<IPropsTextSetting>(bot.llm_parameters);
 
-  const listSetting = [
+  useEffect(() => {
+    handleChangeTextSetting(count);
+  }, [count]);
+
+  const listSetting: {
+    key: keyof IPropsTextSetting;
+    title: string;
+    min: number;
+    max: number;
+  }[] = [
     {
-      key: "token",
+      key: "max_token",
       title: "Độ dài token tối đa",
       min: 1,
-      max: 6000,
+      max: 60000,
     },
     {
-      key: "heat",
+      key: "temperature",
       title: "Nhiệt độ",
       min: 0,
       max: 2,
@@ -139,7 +167,7 @@ const TextSetting = () => {
             step={1}
           />
           <div className="w-full flex justify-between items-center text-xs">
-            <span>{e.min}</span>
+            <span>{count[e.key as keyof typeof count]}</span>
             <span>{e.max}</span>
           </div>
         </div>

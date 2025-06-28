@@ -1,12 +1,15 @@
 "use client";
 
-import { IBot } from "@/model/bot";
+import { IBot, IPropsTextSetting } from "@/model/bot";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { DetailBotPrompt } from "./DetailBotPrompt";
 import { DetailBotSetting } from "./DetailBotSetting";
 import { DetailBotTesting } from "./DetailBotTesting";
 import { useState } from "react";
 import { IModel } from "@/model/model";
+import Link from "next/link";
+import { Bot, Undo2 } from "lucide-react";
+import { DetailBotAction } from "./DetailBotAction";
 
 const tabs_item = [
   {
@@ -45,10 +48,42 @@ export const DetailManagementBot = ({
       active_models: active,
     }));
   };
+  const handleChangeSearchSetting = (token: number) => {
+    setBotDetail((prev) => ({
+      ...prev,
+      knowledge_parameters: {
+        ...prev.knowledge_parameters,
+        source_chunks: token,
+      },
+    }));
+  };
+  const handleChangeTextSetting = (options: IPropsTextSetting) => {
+    setBotDetail((prev) => ({
+      ...prev,
+      llm_parameters: options,
+    }));
+  };
+
   /* ------------------------------------------------------------------------------------ */
+
   return (
     <div className="w-full flex flex-col gap-5  ">
-      <div className="h-[50px] bg-primary/20 rounded-xl w-full"></div>
+      <div className="w-full flex justify-between items-center ">
+        {/*  */}
+        <div className="flex gap-3 items-center">
+          <Link href={"/vi/management-bot"}>
+            <Undo2 />
+          </Link>
+          <div className="size-12 rounded-lg bg-primary/20   flex justify-center items-center">
+            <Bot className="size-7" />
+          </div>
+          <span className="text-base font-medium line-clamp-1">
+            {botDetail.name}
+          </span>
+        </div>
+        {/*  */}
+        <DetailBotAction bot={botDetail} />
+      </div>
       <Tabs defaultValue="prompt">
         <TabsList className="w-full">
           {tabs_item.map((item) => (
@@ -67,11 +102,13 @@ export const DetailManagementBot = ({
               />
             )}
             {e.key == "testing" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 mt-5 gap-5">
+              <div className="grid grid-cols-1 lg:grid-cols-2 mt-3 gap-5 h-full">
                 <DetailBotSetting
                   models={models}
                   bot={botDetail}
                   handleChangeActiveModel={handleChangeActiveModel}
+                  handleChangeSearchSetting={handleChangeSearchSetting}
+                  handleChangeTextSetting={handleChangeTextSetting}
                 />
                 <DetailBotTesting bot={botDetail} />
               </div>

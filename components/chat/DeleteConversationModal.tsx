@@ -48,7 +48,7 @@ export const DeleteConversationModal = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger >
+      <DialogTrigger>
         {" "}
         <Button
           className="rounded-full bg-red-400 group hover:w-[100px] hover:bg-red-500 transition-all duration-300 cursor-pointer"

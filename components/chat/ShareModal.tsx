@@ -14,7 +14,6 @@ export const ShareModal = () => {
   return (
     <Dialog>
       <DialogTrigger>
-        {" "}
         <Button
           className="rounded-full bg-primary/80 group hover:w-[100px] transition-all duration-300 cursor-pointer"
           size={"icon"}

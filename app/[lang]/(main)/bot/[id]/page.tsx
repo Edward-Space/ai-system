@@ -32,8 +32,6 @@ export default async function BotIdPage({
   /* ------------------------------------------------------------------------------------ */
   const { id, lang } = await params;
   const { session_id } = await searchParams;
-  console.log(session_id);
-  
   /* ------------------------------------------------------------------------------------ */
   const bot = await GET<{ data: IBot }>("/api/v1/bots/" + id);
   const conversation =

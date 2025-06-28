@@ -5,14 +5,10 @@ const nextConfig = {
     httpAgentOptions: {
     rejectUnauthorized: false,
   },
-  //  async rewrites() {
-  //   return [
-  //     {
-  //       source: '/api/:path*',                               // các route /api/*
-  //       destination: 'https://api-gateway.newweb.vn/:path*', // đích proxy
-  //     },
-  //   ];
-  // },
+  images: {
+    domains: ['api-gateway.newweb.vn'],
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;

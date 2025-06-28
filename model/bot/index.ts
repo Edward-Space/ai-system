@@ -53,7 +53,12 @@ interface ICategory {
   update_at: string;
 }
 
-
+interface IPropsTextSetting {
+  max_token: number;
+  temperature: number;
+  top_k: number;
+  top_p: number;
+}
 interface IConversation {
   id: string;
   create_at: string;
@@ -78,4 +83,4 @@ interface IConversation {
   }[];
 }
 
-export type { IBot, ICategory ,CreateBotProps, IConversation};
+export type { IBot, ICategory ,CreateBotProps, IConversation, IPropsTextSetting};
