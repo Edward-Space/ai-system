@@ -31,7 +31,7 @@ export const RenderMessage = ({ message }: { message: IMessage }) => {
             id="markdown-render"
             className={cn(
               `prose prose-sm dark:prose-invert max-w-none flex flex-col gap-5 ${
-                isUser && "bg-primary/20 p-4 rounded-[24px]"
+                isUser && "bg-primary/20 px-4 py-2 rounded-[24px]"
               }`
             )}
           >

@@ -1,6 +1,6 @@
 # Authentication System
 
-Hệ thống xác thực cho ứng dụng Next.js với kiểm tra token và redirect tự động.
+Hệ thống xác thực cho ứng dụng Next.js với kiểm tra token, refresh token tự động và redirect tự động.
 
 ## Cấu trúc
 
@@ -26,9 +26,22 @@ Hệ thống xác thực cho ứng dụng Next.js với kiểm tra token và red
 - Theo dõi trạng thái: `isAuthenticated`, `isLoading`
 
 ### 5. Auth Actions (`AuthAction.tsx`)
-- `actionLogin`: Lưu token vào cookie
-- `getTokenUser`: Lấy token (hỗ trợ cả client và server)
-- `logout`: Xóa token (hỗ trợ cả client và server)
+- `actionLogin`: Lưu access_token và refresh_token vào cookie
+- `getTokenUser`: Lấy access token (hỗ trợ cả client và server)
+- `getRefreshToken`: Lấy refresh token (hỗ trợ cả client và server)
+- `refreshAccessToken`: Refresh access token bằng refresh token
+- `logout`: Xóa tất cả tokens (hỗ trợ cả client và server)
+
+### 6. Token Utils (`/utils/tokenUtils.ts`)
+- `isTokenExpired`: Kiểm tra token có hết hạn không
+- `getValidToken`: Lấy token hợp lệ, tự động refresh nếu cần
+- `getTokenTimeRemaining`: Tính thời gian còn lại của token
+- `setupAutoRefresh`: Thiết lập auto-refresh trước khi token hết hạn
+
+### 7. Token Status Component (`TokenStatus.tsx`)
+- Hiển thị trạng thái token cho debugging
+- Monitor thời gian hết hạn
+- Refresh status theo thời gian thực
 
 ## Cách sử dụng
 
@@ -108,16 +121,33 @@ function LoginForm() {
 ```
 
 ## Luồng hoạt động
-
 ### 1. User chưa đăng nhập
+
 1. Truy cập `/vi/dashboard` → Middleware kiểm tra → Redirect `/vi/login`
-2. Đăng nhập thành công → `actionLogin` lưu token → Redirect `/vi`
+2. Đăng nhập thành công → `actionLogin` lưu access_token và refresh_token → Redirect `/vi`
 3. Truy cập các trang khác → ServerAuthGuard kiểm tra → Cho phép truy cập
 
 ### 2. User đã đăng nhập
 1. Truy cập `/vi/login` → Middleware kiểm tra → Redirect `/vi`
 2. Truy cập các trang protected → ServerAuthGuard kiểm tra → Cho phép truy cập
-3. Click logout → `logout` xóa token → Redirect `/vi/login`
+3. Click logout → `logout` xóa tất cả tokens → Redirect `/vi/login`
+
+### 3. Refresh Token Flow
+1. **Auto Refresh**: Token sẽ tự động refresh trước 5 phút khi hết hạn
+2. **API Call với Token hết hạn**: 
+   - Axios interceptor bắt lỗi 401
+   - Tự động gọi refresh token API
+   - Retry request ban đầu với token mới
+   - Nếu refresh thất bại → Redirect `/vi/login`
+3. **Manual Token Check**:
+   - `getValidToken()` kiểm tra token expiry
+   - Tự động refresh nếu token hết hạn
+   - Trả về token hợp lệ hoặc null
+
+### 4. Token Monitoring
+1. `useAuth` hook thiết lập auto-refresh timer
+2. `TokenStatus` component hiển thị trạng thái real-time
+3. Tự động cleanup timers khi component unmount
 
 ### 3. Trang `/vi` (không cần token)
 1. Truy cập `/vi` → Middleware cho phép → Hiển thị trang
@@ -146,6 +176,22 @@ app/
 1. **Token Storage**: Sử dụng HTTP-only cookie để bảo mật
 2. **Middleware**: Chạy ở edge runtime, kiểm tra tất cả requests
 3. **Server vs Client**: AuthAction hỗ trợ cả server và client side
+4. **Refresh Token Security**: 
+   - Refresh token có thời hạn dài hơn access token
+   - Được lưu trong HTTP-only cookie để tránh XSS
+   - Tự động xóa khi refresh thất bại
+5. **Auto Refresh**: 
+   - Chạy trước 5 phút khi token hết hạn
+   - Sử dụng setTimeout, tự động cleanup
+   - Chỉ hoạt động khi user đang active
+6. **Error Handling**: 
+   - Axios interceptor xử lý 401 tự động
+   - Fallback về login khi refresh thất bại
+   - Retry logic cho failed requests
+7. **Performance**: 
+   - Token validation chỉ parse JWT header
+   - Minimal API calls với smart caching
+   - Cleanup timers để tránh memory leaks
 4. **Error Handling**: Tự động redirect về login khi có lỗi
 5. **Performance**: ServerAuthGuard kiểm tra ở server, tránh flash content
 

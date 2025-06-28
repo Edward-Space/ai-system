@@ -5,7 +5,7 @@ import { useLLMOutput } from "@llm-ui/react";
 import { markdownLookBack } from "@llm-ui/markdown";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, X } from "lucide-react";
+import { ArrowUp, Send, X } from "lucide-react";
 import { MarkdownComponent } from "./MarkdownComponent";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { FormData, IMessage, StreamingState } from "@/model/chat";
@@ -18,6 +18,7 @@ import { IBot, IConversation } from "@/model/bot";
 import { useRouter } from "next/navigation";
 import { useSelectModel } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import FileUpload from "./FileUpload";
 /* ------------------------------------------------------------------------------------ */
 interface IProps {
   type?: "dashboard" | "agent" | "testing";
@@ -47,6 +48,8 @@ export default function ChatSection({
     errorMessage: "",
   });
   const [isStreamFinished, setIsStreamFinished] = useState(true);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const promptValue = watch("prompt");
@@ -80,17 +83,34 @@ export default function ChatSection({
     if (abortControllerRef.current) {
       cancelStream();
     }
+    
+    // Tạo nội dung tin nhắn bao gồm text và thông tin files
+    let messageContent = userPrompt;
+    if (selectedImages.length > 0 || selectedFiles.length > 0) {
+      messageContent += "\n\n";
+      if (selectedImages.length > 0) {
+        messageContent += `📷 Images: ${selectedImages.map(img => img.name).join(", ")}\n`;
+      }
+      if (selectedFiles.length > 0) {
+        messageContent += `📎 Files: ${selectedFiles.map(file => file.name).join(", ")}`;
+      }
+    }
+    
     // Thêm tin nhắn người dùng với ID và timestamp
     setMessages((prev) => [
       ...prev,
       {
         id: useGenId(),
         role: "user",
-        content: userPrompt,
+        content: messageContent,
         timestamp: Date.now(),
       },
     ]);
+    
+    // Reset form và files
     reset();
+    setSelectedFiles([]);
+    setSelectedImages([]);
     // Thêm một khoảng dừng nhỏ trước khi bắt đầu streaming để tạo hiệu ứng tự nhiên
     await new Promise((resolve) => setTimeout(resolve, 300));
     // Reset trạng thái streaming
@@ -291,7 +311,10 @@ export default function ChatSection({
       )}
     >
       {/* Chat Space */}
-      <ScrollArea ref={scrollRef} className="h-[80%] pb-4 lg:p-4 w-full chat-scroll">
+      <ScrollArea
+        ref={scrollRef}
+        className={`${selectedFiles.length >0 || selectedImages.length>0 ? 'h-[70%]':'h-[80%]'} pb-4 lg:p-4 w-full chat-scroll`}
+      >
         <div className="space-y-6 transition-all duration-300">
           {messages.length === 0 && !streamingState.isStreaming && (
             <div className="animate-fade-in">
@@ -329,16 +352,85 @@ export default function ChatSection({
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col w-full gap-2"
           >
-            <div className="flex flex-col gap-2 relative bg-secondary py-2 px-3  border border-gray-200  rounded-[24px] overflow-hidden shadow-sm">
+            {/* File Preview Section */}
+            {(selectedFiles.length > 0 || selectedImages.length > 0) && (
+              <div className="flex flex-wrap gap-2 p-3 bg-primary/10 rounded-[24px] ">
+                {/* Image Previews */}
+                {selectedImages.map((image, index) => (
+                  <div key={`image-${index}`} className="relative group">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden  bg-white dark:bg-gray-700">
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={image.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedImages(prev => prev.filter((_, i) => i !== index));
+                      }}
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate rounded-b-lg">
+                      {image.name}
+                    </div>
+                  </div>
+                ))}
+                {/* File Previews */}
+                {selectedFiles.map((file, index) => (
+                  <div key={`file-${index}`} className="relative group">
+                    <div className="w-32 h-16 rounded-lg  bg-white dark:bg-gray-700 flex flex-col items-center justify-center p-2">
+                      <div className="text-2xl mb-1">📄</div>
+                      <div className="text-xs text-center truncate w-full">
+                        {file.name.split('.').pop()?.toUpperCase()}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+                      }}
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate rounded-b-lg">
+                      {file.name}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-col gap-2 relative bg-primary/10 py-2 px-3    rounded-[24px] overflow-hidden ">
               <AutoResizeTextarea
                 {...register("prompt", { required: true })}
                 placeholder="Nhập tin nhắn của bạn..."
                 style={{ resize: "none" }}
-                className="flex-1 min-h-[54px] py-4  border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="flex-1 min-h-[54px] py-4   focus-visible:ring-0 focus-visible:ring-offset-0"
                 disabled={streamingState.isStreaming}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    const promptValue = watch("prompt");
+                    if (promptValue?.trim() && !streamingState.isStreaming) {
+                      handleSubmit(onSubmit)();
+                    }
+                  }
+                  // Shift+Enter sẽ cho phép xuống hàng (hành vi mặc định)
+                }}
               />
 
-              <div className="flex items-center justify-end">
+              <div className="flex items-center justify-between">
+                <FileUpload
+                  onFileSelect={setSelectedFiles}
+                  onImageSelect={setSelectedImages}
+                  disabled={streamingState.isStreaming}
+                  maxFiles={5}
+                  maxFileSize={10}
+                />
                 {streamingState.isStreaming ? (
                   <Button
                     type="button"
@@ -352,12 +444,12 @@ export default function ChatSection({
                 ) : (
                   <Button
                     type="submit"
-                    size="icon"
+                    size={"icon"}
                     variant="ghost"
                     className="text-blue-500 hover:text-blue-600 bg-white cursor-pointer border rounded-full [&_svg:not([class*='size-'])]:size-5 size-10"
                     disabled={!promptValue?.trim()}
                   >
-                    <Send className="h-7 w-7" />
+                    <ArrowUp className="h-7 w-7" />
                   </Button>
                 )}
               </div>
