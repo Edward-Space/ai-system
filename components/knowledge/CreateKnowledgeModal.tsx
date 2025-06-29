@@ -22,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useCreateKnowledge } from "@/swr/useCreateKnowledge";
+import { toast } from "sonner";
 
 const knowledge_type = [
   {
@@ -90,15 +92,26 @@ const image_option = [
 export const CreateKnowledgeModal = () => {
   //
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [knowledgeType, setKnowledgeType] = useState<"text-format" | "image">(
     "text-format"
   );
+  const { createKnowledge, isCreating, error, resetError } = useCreateKnowledge();
+
+  // Cập nhật import_type khi knowledge type thay đổi
+  const handleKnowledgeTypeChange = (type: "text-format" | "image") => {
+    setKnowledgeType(type);
+    const defaultImportType = type === "text-format" 
+      ? text_format_option[0].key 
+      : image_option[0].key;
+    setValue("import_type", defaultImportType);
+  };
 
   //
   const {
     handleSubmit,
     register,
+    reset,
+    setValue,
     formState: { errors },
   } = useForm<TCreateKnowledgeSchema>({
     resolver: zodResolver(createKnowledgeSchema),
@@ -110,8 +123,24 @@ export const CreateKnowledgeModal = () => {
   });
   //
   const onSubmit = async (data: TCreateKnowledgeSchema) => {
-    console.log(data);
-    setIsLoading(true);
+    // Thêm knowledge type vào data
+    const knowledgeData = {
+      ...data,
+      type: 'text',
+    };
+    
+    const success = await createKnowledge(knowledgeData);
+    
+    if (success) {
+      toast.success("Tạo knowledge thành công");
+      setIsOpen(false);
+      reset(); // Reset form
+      resetError();
+      // Reset knowledge type về mặc định
+      setKnowledgeType("text-format");
+    } else {
+      toast.error(error || "Có lỗi xảy ra khi tạo knowledge");
+    }
   };
   //
   return (
@@ -132,10 +161,10 @@ export const CreateKnowledgeModal = () => {
               <div
                 key={idx}
                 onClick={() =>
-                  setKnowledgeType(e.id as "text-format" | "image")
-                }
+                    handleKnowledgeTypeChange(e.id as "text-format" | "image")
+                  }
                 className={cn(
-                  "w-full border rounded-xl aspect-square flex flex-col gap-2 items-center justify-center hover:border-primary/80 transition-all duration-300 cursor-pointer",
+                  "w-full border rounded-xl py-5 flex flex-col gap-2 items-center justify-center hover:border-primary/80 transition-all duration-300 cursor-pointer",
                   { "border-primary/80": knowledgeType == e.id }
                 )}
               >
@@ -175,6 +204,7 @@ export const CreateKnowledgeModal = () => {
                       ? text_format_option[0].key
                       : image_option[0].key
                   }
+                  onValueChange={(value) => setValue("import_type", value)}
                 >
                   <SelectTrigger className="w-full data-[size=default]:h-12 ">
                     <SelectValue className="h-12" placeholder={e.placeholder} />
@@ -184,9 +214,9 @@ export const CreateKnowledgeModal = () => {
                     {(knowledgeType == "text-format"
                       ? text_format_option
                       : image_option
-                    ).map((e) => (
-                      <SelectItem key={e.key} value={e.key}>
-                        {e.label}
+                    ).map((option) => (
+                      <SelectItem key={option.key} value={option.key}>
+                        {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -198,9 +228,10 @@ export const CreateKnowledgeModal = () => {
           <Button
             type="submit"
             className="w-full rounded-full h-12 flex gap-2 items-center"
+            disabled={isCreating}
           >
-            {isLoading && <LoaderCircle className="animate-spin" />} Tạo
-            Knowledge
+            {isCreating && <LoaderCircle className="animate-spin" />} 
+            {isCreating ? "Đang tạo..." : "Tạo Knowledge"}
           </Button>
         </form>
       </DialogContent>

@@ -27,13 +27,17 @@ export const SidebarMenuFeatures = ({ lang }: { lang: string }) => {
   /* ------------------------------------------------------------------------------------ */
   const { setOpen } = useSidebar();
   /* ------------------------------------------------------------------------------------ */
-  const pathHideSidebar = [`/vi/management-bot/${params.id}`];
+  const pathHideSidebar = [
+    `/vi/management-bot/${params.id}`,
+    `/vi/management-knowledge/${params.id}`,
+    `/vi/management-knowledge/create/${params.knowledge_id}`,
+  ];
   /* ------------------------------------------------------------------------------------ */
   useEffect(() => {
     if (pathHideSidebar.includes(pathName)) {
       setOpen(false);
-    }else{
-      setOpen(true)
+    } else {
+      setOpen(true);
     }
   }, [pathName]);
   /* ------------------------------------------------------------------------------------ */
