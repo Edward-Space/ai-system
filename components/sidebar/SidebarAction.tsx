@@ -5,11 +5,11 @@ import Link from "next/link";
 const SIDE_BAR_ACTION = [
   {
     label: "New Chat",
-    icon: <SquarePen className="group-data-[collapsible=icon]:size-6 size-5" />,
+    icon: <SquarePen className="group-data-[collapsible=icon]:size-7 size-5" />,
   },
   {
     label:'Search Chat',
-    icon:<Search className="group-data-[collapsible=icon]:size-6 size-5"/>
+    icon:<Search className="group-data-[collapsible=icon]:size-7 size-5"/>
   }
 ];
 
@@ -20,7 +20,7 @@ export const SidebarAction = () => {
         <Tooltip key={idx}>
           <TooltipTrigger asChild>
             <Link href={'/vi'}
-              className="flex items-center gap-2 rounded-lg p-2 text-sm hover:bg-primary/20 cursor-pointer"
+              className="flex items-center gap-2 rounded-lg p-2 text-sm hover:bg-primary/20 cursor-pointer min-w-fit"
             >
               {e.icon}
               <span className="group-data-[collapsible=icon]:hidden">{e.label}</span>

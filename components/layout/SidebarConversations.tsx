@@ -58,7 +58,7 @@ export const SidebarConversations = ({ lang }: { lang: string }) => {
   }, [session_id]);
   // 
   return (
-    <div className="p-2">
+    <div className="p-2 group-data-[collapsible=icon]:hidden">
       {DataHistoryChat.map((item) => (
         <HistoryChatItem
           item={item}

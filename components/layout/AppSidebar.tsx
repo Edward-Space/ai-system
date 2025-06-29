@@ -18,7 +18,7 @@ export async function AppSidebar({ lang }: { lang: string }) {
     <>
       {token && (
         <Sidebar collapsible="icon" className="border-none bg-primary/20 ">
-          <SidebarHeader className="h-fit py-5 px-2 flex justify-between items-center">
+          <SidebarHeader className="h-fit p-0 pl-1 py-5  flex justify-between items-center">
             <Logo />
           </SidebarHeader>
           {/*  */}
@@ -30,7 +30,7 @@ export async function AppSidebar({ lang }: { lang: string }) {
             </Suspense>
           </SidebarContent>
           {/*  */}
-          <SidebarFooter className="px-2 py-4 border-t border-gray-200 dark:border-gray-800">
+          <SidebarFooter className="p-0 pl-1 py-5 border-t border-gray-200 dark:border-gray-800">
             <SidebarSetting />
           </SidebarFooter>
         </Sidebar>
