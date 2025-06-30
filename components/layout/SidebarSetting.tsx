@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { SettingModal } from "./SettingModal";
 
 export const SidebarSetting = () => {
   const router = useRouter();
@@ -30,9 +31,9 @@ export const SidebarSetting = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="w-[200px]" side="top">
-        <DropdownMenuItem className="cursor-pointer py-2">
-          <SettingsIcon /> Cài đặt
-        </DropdownMenuItem>
+        {/* <DropdownMenuItem className="cursor-pointer py-2"> */}
+          <SettingModal />
+        {/* </DropdownMenuItem> */}
         <DropdownMenuItem className="cursor-pointer py-2">
           <Headset /> Hỗ trợ
         </DropdownMenuItem>

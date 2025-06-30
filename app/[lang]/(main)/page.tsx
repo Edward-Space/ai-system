@@ -17,7 +17,7 @@ export default async function HomePage({
     <div className="h-[calc(100vh-60px)] overflow-y-hidden w-full">
       <HeaderChat />
       <div className="h-[calc(100vh-100px]">
-        <ChatSection lang={lang} session_id={session_id && `${session_id}`} />
+        <ChatSection lang={lang} type="dashboard" session_id={session_id && `${session_id}`} />
       </div>
     </div>
   );

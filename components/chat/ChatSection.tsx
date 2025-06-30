@@ -313,6 +313,7 @@ export default function ChatSection({
             ? "h-[70%]"
             : "h-[80%]"
         } pb-4 lg:p-4 w-full chat-scroll`}
+        style={{display:'block'}}
       >
         <div className="space-y-6 transition-all duration-300">
           {messages.length === 0 && !streamingState.isStreaming && (
