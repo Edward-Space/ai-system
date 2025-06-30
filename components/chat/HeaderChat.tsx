@@ -26,11 +26,9 @@ interface IProps {
 export const HeaderChat = ({ type = "dashboard", bot }: IProps) => {
   return (
     <div className="w-full flex flex-col lg:flex-row lg:justify-between lg:items-center pb-3 gap-3  ">
-      <ClientOnly>
         {type === "dashboard" && <HeaderChatHome />}
         {type === "agent" && bot && <HeaderChatBot bot={bot} />}
         {type == "testing" && bot && <HeaderChatTesting bot={bot} />}
-      </ClientOnly>
     </div>
   );
 };
