@@ -30,11 +30,47 @@ const AutoResizeTextarea = forwardRef<
     autoHeigh();
   }, [props.value, autoHeigh]);
   /* ------------------------------------------------------------------------------------ */
+  // Xử lý sự kiện keydown để giữ lại format
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Cho phép Tab để thêm khoảng trắng thay vì chuyển focus
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
+      
+      // Thêm 2 spaces thay cho tab
+      const newValue = value.substring(0, start) + '  ' + value.substring(end);
+      textarea.value = newValue;
+      
+      // Đặt lại vị trí cursor
+      textarea.selectionStart = textarea.selectionEnd = start + 2;
+      
+      // Trigger onChange event để cập nhật state
+      const event = new Event('input', { bubbles: true });
+      textarea.dispatchEvent(event);
+      
+      // Cập nhật chiều cao
+      autoHeigh();
+    }
+    
+    // Gọi onKeyDown từ props nếu có
+    if (props.onKeyDown) {
+      props.onKeyDown(e);
+    }
+  };
+
   return (
     <Textarea
       {...props}
       ref={textareaRef}
-      className={`hide-scrollbar max-h-[100px] rounded-none border-none shadow-none px-3 focus-visible:ring-transparent ${
+      onKeyDown={handleKeyDown}
+      style={{
+        whiteSpace: 'pre-wrap', // Giữ lại xuống hàng và khoảng trắng
+        ...props.style
+      }}
+      className={`hide-scrollbar max-h-[100px] rounded-none border-none shadow-none px-3 focus-visible:ring-transparent flex-1 min-h-[54px] py-4 focus-visible:ring-0 focus-visible:ring-offset-0 ${
         props.className || ""
       }`}
     />

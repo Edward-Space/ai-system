@@ -5,70 +5,125 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Button } from "../../ui/button";
 import { FileText, Download, AlertCircle, Loader2 } from "lucide-react";
 import { ScrollArea } from "../../ui/scroll-area";
-import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
+import ClientOnly from "@/components/common/ClientOnly";
+import LocalFilePreview from "./LocalFilePreview";
 
 // Lazy load preview components for better performance
-const PDFPreview = lazy(() => import("./previews").then(module => ({ default: module.PDFPreview })));
-const DOCXPreview = lazy(() => import("./previews").then(module => ({ default: module.DOCXPreview })));
-const TXTPreview = lazy(() => import("./previews").then(module => ({ default: module.TXTPreview })));
-const XLSXPreview = lazy(() => import("./previews").then(module => ({ default: module.XLSXPreview })));
+// Use dynamic import for PDFPreview to avoid SSR issues
+const PDFPreview = dynamic(() => import("./previews/PDFPreview"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center p-8">
+      <Loader2 className="h-8 w-8 animate-spin" />
+      <span className="ml-2">Đang tải PDF Preview...</span>
+    </div>
+  ),
+});
+
+const DOCXPreview = lazy(() => import("./previews/DOCXPreview"));
+const TXTPreview = lazy(() => import("./previews/TXTPreview"));
+const XLSXPreview = lazy(() => import("./previews/XLSXPreview"));
 
 interface UploadedFile {
   id: string;
   name: string;
   size: number;
   type: string;
-  status: 'uploading' | 'uploaded' | 'error';
+  status: "uploading" | "uploaded" | "error";
   progress: number;
   file_id?: string;
+  localFile?: File; // Add support for local File object
 }
 
 interface FilePreviewProps {
   file: UploadedFile;
 }
 
-type FileType = 'pdf' | 'docx' | 'txt' | 'xlsx' | 'unknown';
+type FileType = "pdf" | "docx" | "txt" | "xlsx" | "unknown";
 
 const FilePreview = ({ file }: FilePreviewProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [localFileUrl, setLocalFileUrl] = useState<string | null>(null);
+
+  console.log(file);
+  
+  // Create blob URL for local file preview
+  useEffect(() => {
+    if (file.localFile) {
+      const url = URL.createObjectURL(file.localFile);
+      setLocalFileUrl(url);
+
+      // Cleanup blob URL when component unmounts or file changes
+      return () => {
+        URL.revokeObjectURL(url);
+        setLocalFileUrl(null);
+      };
+    } else {
+      setLocalFileUrl(null);
+    }
+  }, [file.localFile]);
 
   const getFileType = (fileName: string): FileType => {
-    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    const extension = fileName.split(".").pop()?.toLowerCase() || "";
     switch (extension) {
-      case 'pdf':
-        return 'pdf';
-      case 'docx':
-      case 'doc':
-        return 'docx';
-      case 'txt':
-      case 'text':
-        return 'txt';
-      case 'xlsx':
-      case 'xls':
-        return 'xlsx';
+      case "pdf":
+        return "pdf";
+      case "docx":
+      case "doc":
+        return "docx";
+      case "txt":
+      case "text":
+        return "txt";
+      case "xlsx":
+      case "xls":
+        return "xlsx";
       default:
-        return 'unknown';
+        return "unknown";
     }
   };
 
   const generateFileUrl = (fileId: string): string => {
-    // Generate URL for file preview
-    return `https://file-aisystem.newweb.vn/media/${fileId}`;
+    // Generate URL for file preview - match the format used in API calls
+    const fileType = getFileType(file.name);
+    const extension =
+      fileType === "unknown" ? file.name.split(".").pop() || "pdf" : fileType;
+    const url = `https://file-aisystem.newweb.vn/media/Document/${fileId}.${extension}`;
+    console.log(
+      "Generated file URL:",
+      url,
+      "for file:",
+      file.name,
+      "fileId:",
+      fileId
+    );
+    return url;
+  };
+
+  const getPreviewUrl = (): string => {
+    // Priority: local file URL > server file URL
+    if (localFileUrl) {
+      return localFileUrl;
+    }
+    // if (file.file_id) {
+    //   return generateFileUrl(file.file_id);
+    // }
+    return "";
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const downloadFile = () => {
     if (!file.file_id) return;
     const url = generateFileUrl(file.file_id);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = file.name;
     document.body.appendChild(link);
@@ -100,42 +155,60 @@ const FilePreview = ({ file }: FilePreviewProps) => {
       );
     }
 
+    const previewUrl = getPreviewUrl();
+
+    // If no preview URL available, show message
+    if (!previewUrl) {
+      return (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">Chưa có file để preview</h3>
+          <p className="text-muted-foreground mb-4">
+            File chưa được upload hoặc chưa có dữ liệu local
+          </p>
+        </div>
+      );
+    }
+
     const commonProps = {
-      fileUrl: file.file_id ? generateFileUrl(file.file_id) : "",
+      fileUrl: previewUrl,
       fileName: file.name,
       onError: setError,
-      onLoading: setIsLoading
+      onLoading: setIsLoading,
     };
 
+    // For local files, use LocalFilePreview component
+    if (file.localFile) {
+      return <LocalFilePreview file={file.localFile} />;
+    }
+
     switch (fileType) {
-      case 'pdf':
+      case "pdf":
         return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <PDFPreview {...commonProps} />
-          </Suspense>
+            <PDFPreview file={file} onError={setError} onLoading={setIsLoading} />
         );
-      
-      case 'docx':
+
+      case "docx":
         return (
           <Suspense fallback={<LoadingSpinner />}>
             <DOCXPreview {...commonProps} />
           </Suspense>
         );
-      
-      case 'txt':
+
+      case "txt":
         return (
           <Suspense fallback={<LoadingSpinner />}>
             <TXTPreview {...commonProps} />
           </Suspense>
         );
-      
-      case 'xlsx':
+
+      case "xlsx":
         return (
           <Suspense fallback={<LoadingSpinner />}>
             <XLSXPreview {...commonProps} />
           </Suspense>
         );
-      
+
       default:
         return (
           <div className="flex flex-col items-center justify-center p-8 text-center">
@@ -182,13 +255,7 @@ const FilePreview = ({ file }: FilePreviewProps) => {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px]">
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : (
-            renderPreview()
-          )}
-        </ScrollArea>
+        <ScrollArea className="h-[400px]">{renderPreview()}</ScrollArea>
       </CardContent>
     </Card>
   );

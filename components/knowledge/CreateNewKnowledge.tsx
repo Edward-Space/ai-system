@@ -9,6 +9,7 @@ import { CreateSettingStep } from "./steps/CreateSettingStep";
 import { SegmentedPreviewStep } from "./steps/SegmentedPreviewStep";
 import { ProcessDataStep } from "./steps/ProcessDataStep";
 import { Progress } from "../ui/progress";
+import { IUploadFile } from "@/model/knowledge";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -46,24 +47,25 @@ const steps: StepConfig[] = [
   },
 ];
 
-
-
 export const CreateNewKnowledge = () => {
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
-  const [selectedSegmentationOption, setSelectedSegmentationOption] = useState<string | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<IUploadFile[]>([]);
+
+  const [selectedSegmentationOption, setSelectedSegmentationOption] = useState<
+    string | null
+  >(null);
 
   const handleNextStep = () => {
     // Validate step 1: must have uploaded files
     if (currentStep === 1 && uploadedFiles.length === 0) {
       return;
     }
-    
+
     // Validate step 2: must have selected segmentation option
     if (currentStep === 2 && !selectedSegmentationOption) {
       return;
     }
-    
+
     if (currentStep < 4) {
       setCurrentStep((prev) => (prev + 1) as Step);
     }
@@ -91,8 +93,8 @@ export const CreateNewKnowledge = () => {
         );
       case 2:
         return (
-          <CreateSettingStep 
-            onNext={handleNextStep} 
+          <CreateSettingStep
+            onNext={handleNextStep}
             onPrev={handlePrevStep}
             selectedOption={selectedSegmentationOption}
             onOptionSelect={setSelectedSegmentationOption}
@@ -100,8 +102,8 @@ export const CreateNewKnowledge = () => {
         );
       case 3:
         return (
-          <SegmentedPreviewStep 
-            onNext={handleNextStep} 
+          <SegmentedPreviewStep
+            onNext={handleNextStep}
             onPrev={handlePrevStep}
             uploadedFiles={uploadedFiles}
             selectedSegmentationOption={selectedSegmentationOption}
@@ -171,7 +173,9 @@ export const CreateNewKnowledge = () => {
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-xs text-muted-foreground">{step.description}</p>
+                <p className="text-xs text-muted-foreground">
+                  {step.description}
+                </p>
               </CardContent>
             </Card>
           );

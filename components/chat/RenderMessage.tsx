@@ -63,7 +63,7 @@ export const RenderMessage = ({ message }: { message: IMessage }) => {
                 li: ({ children, ...props }) => {
                   return (
                     <li
-                      className=" list-inside   marker:text-secondary  "
+                      className=" list-inside   marker:text-black/60  "
                       {...props}
                     >
                       {children}

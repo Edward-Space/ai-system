@@ -7,6 +7,8 @@ import { Eye, FileText, Loader2 } from "lucide-react";
 import { ScrollArea } from "../../ui/scroll-area";
 import { cn } from "@/lib/utils";
 import FilePreview from "./FilePreview";
+import { IUploadFile } from "@/model/knowledge";
+import ClientOnly from "@/components/common/ClientOnly";
 
 interface UploadedFile {
   id: string;
@@ -31,20 +33,20 @@ interface SegmentPreview {
   metadata?: any;
 }
 
-export const SegmentedPreviewStep = ({ 
-  onNext, 
-  onPrev, 
-  uploadedFiles, 
-  selectedSegmentationOption 
+export const SegmentedPreviewStep = ({
+  onNext,
+  onPrev,
+  uploadedFiles,
+  selectedSegmentationOption,
 }: SegmentedPreviewStepProps) => {
-  const [selectedFile, setSelectedFile] = useState<UploadedFile | null>(null);
+  const [selectedFile, setSelectedFile] = useState<IUploadFile | null>(null);
   const [segmentPreviews, setSegmentPreviews] = useState<SegmentPreview[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   // Filter uploaded files to only show successfully uploaded ones
-  const uploadedFilesList = uploadedFiles.filter(file => file.status === "uploaded" && file.file_id);
-
+  const uploadedFilesList = uploadedFiles.filter(
+    (file) => file.status === "uploaded" && file.file_id
+  );
   // Auto-select first file if available
   useEffect(() => {
     if (uploadedFilesList.length > 0 && !selectedFile) {
@@ -62,17 +64,22 @@ export const SegmentedPreviewStep = ({
   const fetchSegmentPreview = async (fileId: string) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch('/api/v1/segments/preview', {
-        method: 'POST',
+      const response = await fetch("/api/v1/segments/preview", {
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
         body: JSON.stringify({
-          chunking_strategy: selectedSegmentationOption === 'Automatic segmentation & Cleaning' ? 'auto' : 'custom',
-          document_url: `https://file-aisystem.newweb.vn/media/Document/${fileId}.pdf`
-        })
+          chunking_strategy:
+            selectedSegmentationOption === "Automatic segmentation & Cleaning"
+              ? "auto"
+              : "custom",
+          document_url: `https://file-aisystem.newweb.vn/media/Document/${fileId}.pdf`,
+        }),
       });
 
       if (!response.ok) {
@@ -80,20 +87,24 @@ export const SegmentedPreviewStep = ({
       }
 
       const data = await response.json();
-      
+
       // Transform API response to SegmentPreview format
       if (data.segments && Array.isArray(data.segments)) {
-        const previews: SegmentPreview[] = data.segments.map((segment: any, index: number) => ({
-          id: segment.id || `segment-${index}`,
-          content: segment.content || segment.text || '',
-          metadata: segment.metadata || {}
-        }));
+        const previews: SegmentPreview[] = data.segments.map(
+          (segment: any, index: number) => ({
+            id: segment.id || `segment-${index}`,
+            content: segment.content || segment.text || "",
+            metadata: segment.metadata || {},
+          })
+        );
         setSegmentPreviews(previews);
       } else {
         setSegmentPreviews([]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch segment preview');
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch segment preview"
+      );
       setSegmentPreviews([]);
     } finally {
       setIsLoading(false);
@@ -101,11 +112,11 @@ export const SegmentedPreviewStep = ({
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   return (
@@ -113,7 +124,8 @@ export const SegmentedPreviewStep = ({
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-semibold">Segmented Preview</h2>
         <p className="text-muted-foreground">
-          Preview how your content will be segmented using {selectedSegmentationOption}
+          Preview how your content will be segmented using{" "}
+          {selectedSegmentationOption}
         </p>
       </div>
 
@@ -146,7 +158,9 @@ export const SegmentedPreviewStep = ({
                       )}
                       onClick={() => setSelectedFile(file)}
                     >
-                      <div className="font-medium text-sm truncate">{file.name}</div>
+                      <div className="font-medium text-sm truncate">
+                        {file.name}
+                      </div>
                       <div className="text-xs text-muted-foreground mt-1">
                         {formatFileSize(file.size)} • {file.type}
                       </div>
@@ -161,13 +175,18 @@ export const SegmentedPreviewStep = ({
         {/* Column 2: File Preview */}
         <div className="flex-1">
           {selectedFile ? (
-            <FilePreview file={selectedFile} />
+            <ClientOnly>
+              {" "}
+              <FilePreview file={selectedFile} />
+            </ClientOnly>
           ) : (
             <Card className="h-full">
               <CardContent className="flex items-center justify-center h-full">
                 <div className="text-center text-muted-foreground">
                   <FileText className="mx-auto h-16 w-16 mb-4" />
-                  <p className="text-lg font-medium">Chọn file để xem preview</p>
+                  <p className="text-lg font-medium">
+                    Chọn file để xem preview
+                  </p>
                   <p className="text-sm">Hỗ trợ: PDF, DOCX, TXT, XLSX</p>
                 </div>
               </CardContent>
@@ -201,7 +220,9 @@ export const SegmentedPreviewStep = ({
                   <div className="text-center py-8 text-muted-foreground">
                     <Eye className="mx-auto h-12 w-12 mb-2" />
                     <p>No segments available</p>
-                    <p className="text-xs mt-1">Select a file to view segments</p>
+                    <p className="text-xs mt-1">
+                      Select a file to view segments
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -211,21 +232,23 @@ export const SegmentedPreviewStep = ({
                           Segment {index + 1}
                         </div>
                         <div className="text-sm">
-                          {segment.content.length > 200 
-                            ? `${segment.content.substring(0, 200)}...` 
-                            : segment.content
-                          }
+                          {segment.content.length > 200
+                            ? `${segment.content.substring(0, 200)}...`
+                            : segment.content}
                         </div>
-                        {segment.metadata && Object.keys(segment.metadata).length > 0 && (
-                          <div className="mt-2 text-xs text-muted-foreground">
-                            <details>
-                              <summary className="cursor-pointer">Metadata</summary>
-                              <pre className="mt-1 text-xs">
-                                {JSON.stringify(segment.metadata, null, 2)}
-                              </pre>
-                            </details>
-                          </div>
-                        )}
+                        {segment.metadata &&
+                          Object.keys(segment.metadata).length > 0 && (
+                            <div className="mt-2 text-xs text-muted-foreground">
+                              <details>
+                                <summary className="cursor-pointer">
+                                  Metadata
+                                </summary>
+                                <pre className="mt-1 text-xs">
+                                  {JSON.stringify(segment.metadata, null, 2)}
+                                </pre>
+                              </details>
+                            </div>
+                          )}
                       </div>
                     ))}
                   </div>

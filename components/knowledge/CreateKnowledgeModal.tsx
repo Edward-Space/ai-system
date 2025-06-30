@@ -24,6 +24,7 @@ import {
 } from "../ui/select";
 import { useCreateKnowledge } from "@/swr/useCreateKnowledge";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const knowledge_type = [
   {
@@ -95,14 +96,14 @@ export const CreateKnowledgeModal = () => {
   const [knowledgeType, setKnowledgeType] = useState<"text-format" | "image">(
     "text-format"
   );
-  const { createKnowledge, isCreating, error, resetError } = useCreateKnowledge();
-
+  const { createKnowledge, isCreating, error, resetError } =
+    useCreateKnowledge();
+  const router = useRouter();
   // Cập nhật import_type khi knowledge type thay đổi
   const handleKnowledgeTypeChange = (type: "text-format" | "image") => {
     setKnowledgeType(type);
-    const defaultImportType = type === "text-format" 
-      ? text_format_option[0].key 
-      : image_option[0].key;
+    const defaultImportType =
+      type === "text-format" ? text_format_option[0].key : image_option[0].key;
     setValue("import_type", defaultImportType);
   };
 
@@ -126,13 +127,14 @@ export const CreateKnowledgeModal = () => {
     // Thêm knowledge type vào data
     const knowledgeData = {
       ...data,
-      type: 'text',
+      type: "text",
     };
-    
+
     const success = await createKnowledge(knowledgeData);
-    
+
     if (success) {
       toast.success("Tạo knowledge thành công");
+      router.push("/vi/management-knowledge/create/" + success.data.id);
       setIsOpen(false);
       reset(); // Reset form
       resetError();
@@ -161,8 +163,8 @@ export const CreateKnowledgeModal = () => {
               <div
                 key={idx}
                 onClick={() =>
-                    handleKnowledgeTypeChange(e.id as "text-format" | "image")
-                  }
+                  handleKnowledgeTypeChange(e.id as "text-format" | "image")
+                }
                 className={cn(
                   "w-full border rounded-xl py-5 flex flex-col gap-2 items-center justify-center hover:border-primary/80 transition-all duration-300 cursor-pointer",
                   { "border-primary/80": knowledgeType == e.id }
@@ -230,7 +232,7 @@ export const CreateKnowledgeModal = () => {
             className="w-full rounded-full h-12 flex gap-2 items-center"
             disabled={isCreating}
           >
-            {isCreating && <LoaderCircle className="animate-spin" />} 
+            {isCreating && <LoaderCircle className="animate-spin" />}
             {isCreating ? "Đang tạo..." : "Tạo Knowledge"}
           </Button>
         </form>

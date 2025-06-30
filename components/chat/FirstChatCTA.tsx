@@ -9,7 +9,7 @@ export const FirstChatCTA = () => {
 
       <div className="grid grid-cols-2 gap-5 w-full">
         {[1, 2, 3, 4].map((e) => (
-          <div key={e} className="w-full h-[200px] bg-primary/10 rounded-lg"></div>
+          <div key={e} className="w-full h-[100px] lg:h-[200px] bg-primary/10 rounded-lg"></div>
         ))}
       </div>
     </div>

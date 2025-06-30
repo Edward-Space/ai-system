@@ -27,6 +27,31 @@ npm install react-pdf mammoth xlsx
 npm install --save-dev @types/mammoth
 ```
 
+## SSR Issues with react-pdf
+
+**Important**: react-pdf has SSR compatibility issues with Next.js. This has been resolved by:
+
+1. **Dynamic Import**: PDFPreview uses `dynamic` import with `ssr: false`
+2. **Client-side Loading**: react-pdf components are only loaded on the client
+3. **Webpack Configuration**: Added canvas and encoding aliases in `next.config.ts`
+
+### Error Resolution
+
+If you encounter `DOMMatrix is not defined` or similar SSR errors:
+
+1. Ensure `next.config.ts` includes the webpack configuration
+2. PDFPreview component uses dynamic import with `ssr: false`
+3. react-pdf imports are wrapped in client-side checks
+
+```typescript
+// Correct way to import react-pdf
+if (typeof window !== 'undefined') {
+  import('react-pdf').then((module) => {
+    // Use module here
+  });
+}
+```
+
 ## 📄 PDFPreview
 
 **Thư viện:** `react-pdf`

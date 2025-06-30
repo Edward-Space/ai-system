@@ -9,20 +9,11 @@ import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
-
-interface UploadedFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  status: "uploading" | "uploaded" | "error";
-  progress: number;
-  file_id?: string;
-}
+import { IUploadFile } from "@/model/knowledge";
 
 interface UploadStepProps {
-  uploadedFiles: UploadedFile[];
-  setUploadedFiles: React.Dispatch<React.SetStateAction<UploadedFile[]>>;
+  uploadedFiles: IUploadFile[];
+  setUploadedFiles: React.Dispatch<React.SetStateAction<IUploadFile[]>>;
   onNext: () => void;
 }
 
@@ -85,8 +76,8 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
         // Update progress
         const progress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
         if (targetFileId) {
-          setUploadedFiles((prev: UploadedFile[]) =>
-            prev.map((f: UploadedFile) =>
+          setUploadedFiles((prev: IUploadFile[]) =>
+            prev.map((f: IUploadFile) =>
               f.id === targetFileId ? { ...f, progress } : f
             )
           );
@@ -102,8 +93,10 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
 
   const handleFileUpload = async (files: File[]) => {
     setIsUploading(true);
+    console.log(files);
+    
 
-    const newFiles: UploadedFile[] = files.map((file) => ({
+    const newFiles: IUploadFile[] = files.map((file) => ({
       id: `${file.name}-${file.size}-${file.lastModified}-${Math.random().toString(36).slice(2, 6)}`,
       name: file.name,
       size: file.size,
@@ -121,8 +114,8 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
       try {
         const fileId = await uploadFileToServer(file, targetFile?.id);
         
-        setUploadedFiles((prev: UploadedFile[]) =>
-          prev.map((f: UploadedFile) =>
+        setUploadedFiles((prev: IUploadFile[]) =>
+          prev.map((f: IUploadFile) =>
             f.id === targetFile?.id
               ? { ...f, status: "uploaded", progress: 100, file_id: fileId || undefined }
               : f
@@ -131,8 +124,8 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
         
         toast.success(`Tải lên thành công: ${file.name}`);
       } catch (error: any) {
-        setUploadedFiles((prev: UploadedFile[]) =>
-          prev.map((f: UploadedFile) =>
+        setUploadedFiles((prev: IUploadFile[]) =>
+          prev.map((f: IUploadFile) =>
             f.id === targetFile?.id ? { ...f, status: "error", progress: 0 } : f
           )
         );
@@ -181,7 +174,7 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
     setUploadedFiles(uploadedFiles.filter((file) => file.id !== fileId));
   };
 
-  const retryUpload = async (file: UploadedFile) => {
+  const retryUpload = async (file: IUploadFile) => {
     // Find the original file object (this is a limitation - we'd need to store it)
     toast.info("Để thử lại, vui lòng tải lên file một lần nữa.");
     removeFile(file.id);
