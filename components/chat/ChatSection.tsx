@@ -44,7 +44,7 @@ export default function ChatSection({
   /* ------------------------------------------------------------------------------------ */
   const { selectedModel } = useSelectModel();
   /* ------------------------------------------------------------------------------------ */
-  const { register, handleSubmit, reset, watch } = useForm<FormData>();
+  const { register, handleSubmit, reset, watch, setValue } = useForm<FormData>();
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [streamingContent, setStreamingContent] = useState<string>("");
   const [streamingState, setStreamingState] = useState<StreamingState>({
@@ -78,9 +78,21 @@ export default function ChatSection({
         isError: false,
         errorMessage: "",
       });
-      setIsStreamFinished(true);
     }
   };
+  /* ------------------------------------------------------------------------------------ */
+  // Handle replace message into chat input
+  const handleReplaceMessage = (content: string) => {
+    setValue("prompt", content);
+    // Focus vào textarea sau khi set value
+    const textarea = document.querySelector('textarea[name="prompt"]') as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.focus();
+      // Set cursor to end of text
+      textarea.setSelectionRange(content.length, content.length);
+    }
+  };
+  /* ------------------------------------------------------------------------------------ */
   const onSubmit = async (data: FormData) => {
     const userPrompt = data?.prompt?.trim();
     if (!userPrompt) return;
@@ -197,6 +209,7 @@ export default function ChatSection({
               if (!session_id && json.session_id && type != "testing") {
                 route.replace(`?session_id=${json.session_id}`);
               }
+              // 
               if (Object.keys(json).length === 0) {
                 setMessages((prev) => [
                   ...prev,
@@ -314,7 +327,10 @@ export default function ChatSection({
               className="animate-fade-in streaming-content"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <RenderMessage message={message} />
+              <RenderMessage 
+                message={message} 
+                onReplaceMessage={handleReplaceMessage}
+              />
             </div>
           ))}
           {/* Hiển thị nội dung đang streaming với animation */}

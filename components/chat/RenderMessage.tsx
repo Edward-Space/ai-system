@@ -5,27 +5,98 @@ import { IMessage } from "@/model/chat";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import CodeBlock from "./CodeBlock";
+import { Button } from "@/components/ui/button";
+import { Copy, RotateCcw } from "lucide-react";
+import { useState } from "react";
 
-export const RenderMessage = ({ message }: { message: IMessage }) => {
+interface RenderMessageProps {
+  message: IMessage;
+  onReplaceMessage?: (content: string) => void;
+}
+
+export const RenderMessage = ({ message, onReplaceMessage }: RenderMessageProps) => {
   const isUser = message.role === "user";
+  const [showActions, setShowActions] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      // Trigger click animation
+      setIsClicking(true);
+      setTimeout(() => setIsClicking(false), 150);
+      
+      await navigator.clipboard.writeText(message.content);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  const handleReplace = () => {
+    if (onReplaceMessage) {
+      onReplaceMessage(message.content);
+    }
+  };
 
   return (
-    <div key={message.id} className={`mb-8 max-w-5xl mx-auto`}>
+    <div 
+      key={message.id} 
+      className={`mb-8 max-w-5xl mx-auto group`}
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
+    >
       <div
         className={`flex items-start gap-3 mb-2 w-full  ${
           isUser ? "flex-row-reverse justify-start" : "flex-row"
         }`}
       >
-        <div className={`max-w-[100%]  ${!isUser && 'w-full'}`}>
+        <div className={`max-w-[100%]  ${!isUser && 'w-full'} relative`}>
           <div
-            className={`font-medium mb-1 ${
-              isUser ? "text-right"  : "text-left "
+            className={`font-medium mb-1 flex items-center gap-2 ${
+              isUser ? "justify-end" : "justify-start"
             }`}
           >
-            {isUser ? "Bạn" : "DeepSeek AI"}
-            <span className="text-xs text-muted-foreground ml-2 font-normal">
-              {new Date(message.timestamp).toLocaleTimeString()}
+            <span>
+              {isUser ? "Bạn" : "DeepSeek AI"}
+              <span className="text-xs text-muted-foreground ml-2 font-normal">
+                {new Date(message.timestamp).toLocaleTimeString()}
+              </span>
             </span>
+            {/* Action buttons for user messages */}
+            {isUser && showActions && (
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                   variant="ghost"
+                   size="sm"
+                   className={cn(
+                     "h-6 w-6 p-0 hover:bg-primary/20 transition-all duration-150",
+                     isClicking && "scale-90 bg-primary/30",
+                     copySuccess && "bg-green-100 dark:bg-green-900/30"
+                   )}
+                   onClick={handleCopy}
+                   title={copySuccess ? "Đã sao chép!" : "Sao chép"}
+                 >
+                   <Copy className={cn(
+                     "h-3 w-3 transition-all duration-150",
+                     copySuccess && "text-green-600 dark:text-green-400",
+                     isClicking && "scale-75"
+                   )} />
+                 </Button>
+                {onReplaceMessage && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 hover:bg-primary/20"
+                    onClick={handleReplace}
+                    title="Thay thế vào ô chat"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
           <div
             id="markdown-render"
@@ -54,7 +125,7 @@ export const RenderMessage = ({ message }: { message: IMessage }) => {
                   return (
                     <ol
                       id="markdown-render-ol"
-                      className=" list-inside list-decimal   gap-0"
+                      className=" list-inside list-decimal gap-0"
                       {...props}
                     ></ol>
                   );
@@ -63,7 +134,7 @@ export const RenderMessage = ({ message }: { message: IMessage }) => {
                 li: ({ children, ...props }) => {
                   return (
                     <li
-                      className=" list-inside   marker:text-black/60  "
+                      className=" list-inside marker:text-black/60  "
                       {...props}
                     >
                       {children}
