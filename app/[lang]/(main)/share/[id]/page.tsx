@@ -1,24 +1,20 @@
 import ChatSection from "@/components/chat/ChatSection";
 import { HeaderChat } from "@/components/chat/HeaderChat";
 import { SearchParams } from "@/model";
-import { IBot, IConversation } from "@/model/bot";
+import { IBot } from "@/model/bot";
 import { GET } from "@/service/api";
 /* ------------------------------------------------------------------------------------ */
 const getData = async ({
   id,
-  session_id,
 }: {
   id: string;
-  session_id: string;
 }) => {
-  const [bot, conversation] = await Promise.allSettled([
-    GET<{ data: IBot }>("/api/v1/bots/" + id),
-    GET<{ data: IConversation }>("/api/v1/conversations/" + session_id),
+  const [bot] = await Promise.allSettled([
+    GET<{ data: IBot }>("/api/v1/bots/" + id + '/view'),
   ]);
   /* ------------------------------------------------------------------------------------ */
   return {
     bot: bot,
-    conversation: conversation,
   };
 };
 /* ------------------------------------------------------------------------------------ */
@@ -33,9 +29,8 @@ export default async function BotIdPage({
   const { id, lang } = await params;
   const { session_id } = await searchParams;
   /* ------------------------------------------------------------------------------------ */
-  const { bot, conversation } = await getData({
+  const { bot } = await getData({
     id: id,
-    session_id: `${session_id ?? ""}`,
   });
   /* ------------------------------------------------------------------------------------ */
   if (bot.status == "rejected") {
@@ -50,13 +45,6 @@ export default async function BotIdPage({
         bot={bot.value?.data}
         type="agent"
         session_id={session_id && `${session_id}`}
-        {...(session_id &&
-          conversation && {
-            conversations:
-              conversation.status == "fulfilled"
-                ? conversation.value?.data
-                : undefined,
-          })}
       />
     </div>
   );

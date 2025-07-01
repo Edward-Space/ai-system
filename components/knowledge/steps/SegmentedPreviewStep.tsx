@@ -9,28 +9,13 @@ import { cn } from "@/lib/utils";
 import FilePreview from "./FilePreview";
 import { IUploadFile } from "@/model/knowledge";
 import ClientOnly from "@/components/common/ClientOnly";
-
-interface UploadedFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  status: "uploading" | "uploaded" | "error";
-  progress: number;
-  file_id?: string;
-}
+import { useSegmentPreview } from "@/swr/useSegmentPreview";
 
 interface SegmentedPreviewStepProps {
   onNext: () => void;
   onPrev: () => void;
-  uploadedFiles: UploadedFile[];
+  uploadedFiles: IUploadFile[];
   selectedSegmentationOption: string | null;
-}
-
-interface SegmentPreview {
-  id: string;
-  content: string;
-  metadata?: any;
 }
 
 export const SegmentedPreviewStep = ({
@@ -40,9 +25,6 @@ export const SegmentedPreviewStep = ({
   selectedSegmentationOption,
 }: SegmentedPreviewStepProps) => {
   const [selectedFile, setSelectedFile] = useState<IUploadFile | null>(null);
-  const [segmentPreviews, setSegmentPreviews] = useState<SegmentPreview[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   // Filter uploaded files to only show successfully uploaded ones
   const uploadedFilesList = uploadedFiles.filter(
     (file) => file.status === "uploaded" && file.file_id
@@ -54,63 +36,15 @@ export const SegmentedPreviewStep = ({
     }
   }, [uploadedFilesList, selectedFile]);
 
-  // Fetch segment preview when file is selected
-  useEffect(() => {
-    if (selectedFile && selectedFile.file_id) {
-      fetchSegmentPreview(selectedFile.file_id);
-    }
-  }, [selectedFile]);
+  // Use SWR hook for segment preview
+  const { segmentPreviews, isLoading, error } = useSegmentPreview({
+    fileUrl: selectedFile?.file_url,
+    chunkingStrategy: selectedSegmentationOption === "Automatic segmentation & Cleaning" ? "auto" : "custom",
+    enabled: !!selectedFile?.file_url,
+  });
 
-  const fetchSegmentPreview = async (fileId: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/v1/segments/preview", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-        body: JSON.stringify({
-          chunking_strategy:
-            selectedSegmentationOption === "Automatic segmentation & Cleaning"
-              ? "auto"
-              : "custom",
-          document_url: `https://file-aisystem.newweb.vn/media/Document/${fileId}.pdf`,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      // Transform API response to SegmentPreview format
-      if (data.segments && Array.isArray(data.segments)) {
-        const previews: SegmentPreview[] = data.segments.map(
-          (segment: any, index: number) => ({
-            id: segment.id || `segment-${index}`,
-            content: segment.content || segment.text || "",
-            metadata: segment.metadata || {},
-          })
-        );
-        setSegmentPreviews(previews);
-      } else {
-        setSegmentPreviews([]);
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch segment preview"
-      );
-      setSegmentPreviews([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  console.log('3',segmentPreviews);
+  
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;

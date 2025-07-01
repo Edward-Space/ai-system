@@ -168,9 +168,6 @@ const LocalFilePreview = ({ file, className }: LocalFilePreviewProps) => {
       case "xlsx":
         return (
           <div className="w-full h-full">
-            <div className="mb-2 text-sm text-muted-foreground">
-              📁 Preview file: {file.name}
-            </div>
             <iframe
               src={fileUrl}
               className="w-full h-[350px] border rounded"
@@ -216,7 +213,7 @@ const LocalFilePreview = ({ file, className }: LocalFilePreviewProps) => {
 
   return (
     <Card className={`h-full ${className || ""}`}>
-      <CardHeader>
+      {/* <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
           <span className="truncate">{file.name}</span>
@@ -235,7 +232,7 @@ const LocalFilePreview = ({ file, className }: LocalFilePreviewProps) => {
             <Download className="h-4 w-4" />
           </Button>
         </div>
-      </CardHeader>
+      </CardHeader> */}
       <CardContent>
         <ScrollArea className="h-[400px]">
           {renderPreview()}

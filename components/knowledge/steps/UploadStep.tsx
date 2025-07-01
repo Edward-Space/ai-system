@@ -34,7 +34,7 @@ const STORAGE_TYPE = "local";
 export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadStepProps) => {
   const [isUploading, setIsUploading] = useState(false);
 
-  const uploadFileToServer = async (file: File, targetFileId?: string): Promise<string | null> => {
+  const uploadFileToServer = async (file: File, targetFileId?: string): Promise<{fileId: string, fileUrl: string} | null> => {
     try {
       // Step 1: Create file metadata
       const fileMetadata = {
@@ -46,7 +46,9 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
       };
 
       const metadataResponse = await axiosInstance.post("/api/v1/files", fileMetadata);
-      const fileId = metadataResponse.data.data.id;
+      const fileData = metadataResponse.data.data;
+      const fileId = fileData.id;
+      const fileUrl = fileData.url;
 
       if (!fileId) {
         throw new Error("Không nhận được file ID từ server");
@@ -63,7 +65,7 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
 
         const formData = new FormData();
         formData.append("file_id", fileId);
-        formData.append("chunk_index", (chunkIndex + 1).toString());
+        formData.append("chunk_index", (chunkIndex).toString());
         formData.append("is_last", isLast.toString());
         formData.append("chunk", chunk);
 
@@ -84,7 +86,7 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
         }
       }
 
-      return fileId;
+      return { fileId, fileUrl };
     } catch (error: any) {
       console.error("Upload error:", error);
       throw error;
@@ -103,6 +105,7 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
       type: file.type,
       status: "uploading",
       progress: 0,
+      localFile: file,
     }));
 
     setUploadedFiles([...uploadedFiles, ...newFiles]);
@@ -112,12 +115,18 @@ export const UploadStep = ({ uploadedFiles, setUploadedFiles, onNext }: UploadSt
       const targetFile = newFiles[i]; // Use index to match exact file
       
       try {
-        const fileId = await uploadFileToServer(file, targetFile?.id);
+        const result = await uploadFileToServer(file, targetFile?.id);
         
         setUploadedFiles((prev: IUploadFile[]) =>
           prev.map((f: IUploadFile) =>
             f.id === targetFile?.id
-              ? { ...f, status: "uploaded", progress: 100, file_id: fileId || undefined }
+              ? { 
+                  ...f, 
+                  status: "uploaded", 
+                  progress: 100, 
+                  file_id: result?.fileId || undefined,
+                  file_url: result?.fileUrl || undefined
+                }
               : f
           )
         );

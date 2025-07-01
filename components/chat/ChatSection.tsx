@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useSelectModel } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import ChatUploadModal from "./ChatUploadModal";
+import SpeechToText from "./SpeechToText";
 import { funcUtils } from "@/lib/funcUtils";
 /* ------------------------------------------------------------------------------------ */
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -106,6 +107,21 @@ export default function ChatSection({
     setSelectedImageUrls(urls);
   };
   /* ------------------------------------------------------------------------------------ */
+  // Handle speech to text
+  const handleSpeechToText = (transcript: string) => {
+    const currentValue = watch("prompt") || "";
+    const newValue = currentValue ? `${currentValue} ${transcript}` : transcript;
+    setValue("prompt", newValue);
+    
+    // Focus vào textarea sau khi set value
+    const textarea = document.querySelector('textarea[name="prompt"]') as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.focus();
+      // Set cursor to end of text
+      textarea.setSelectionRange(newValue.length, newValue.length);
+    }
+  };
+  /* ------------------------------------------------------------------------------------ */
   const onSubmit = async (data: FormData) => {
     const userPrompt = data?.prompt?.trim();
     if (!userPrompt) return;
@@ -130,14 +146,31 @@ export default function ChatSection({
       }
     }
     /* ------------------------------------------------------------------------------------ */
+    // Chuẩn bị thông tin files để lưu vào message
+    const messageFiles = [
+      ...selectedImages.map((img, index) => ({
+        name: img.name,
+        url: selectedImageUrls[index] || URL.createObjectURL(img),
+        type: 'image' as const,
+        size: img.size,
+      })),
+      ...selectedFiles.map((file, index) => ({
+        name: file.name,
+        url: selectedFileUrls[index] || '',
+        type: 'file' as const,
+        size: file.size,
+      }))
+    ];
+
     // Thêm tin nhắn người dùng với ID và timestamp
     setMessages((prev) => [
       ...prev,
       {
         id: useGenId(),
         role: "user",
-        content: messageContent,
+        content: userPrompt, // Chỉ lưu text prompt, không bao gồm thông tin files
         timestamp: Date.now(),
+        files: messageFiles.length > 0 ? messageFiles : undefined,
       },
     ]);
     /* ------------------------------------------------------------------------------------ */
@@ -453,13 +486,19 @@ export default function ChatSection({
               }}
             />
             <div className="flex items-center justify-between">
-              <ChatUploadModal
-                onFileSelect={handleFileSelect}
-                onImageSelect={handleImageSelect}
-                disabled={streamingState.isStreaming}
-                maxFiles={5}
-                maxFileSize={10}
-              />
+              <div className="flex items-center gap-2">
+                <ChatUploadModal
+                  onFileSelect={handleFileSelect}
+                  onImageSelect={handleImageSelect}
+                  disabled={streamingState.isStreaming}
+                  maxFiles={5}
+                  maxFileSize={10}
+                />
+                <SpeechToText
+                  onTranscript={handleSpeechToText}
+                  disabled={streamingState.isStreaming}
+                />
+              </div>
               {streamingState.isStreaming ? (
                 <Button
                   type="button"

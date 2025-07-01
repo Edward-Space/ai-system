@@ -6,7 +6,6 @@ import { Button } from "../../ui/button";
 import { FileText, Download, AlertCircle, Loader2 } from "lucide-react";
 import { ScrollArea } from "../../ui/scroll-area";
 import dynamic from "next/dynamic";
-import ClientOnly from "@/components/common/ClientOnly";
 import LocalFilePreview from "./LocalFilePreview";
 
 // Lazy load preview components for better performance
@@ -33,7 +32,8 @@ interface UploadedFile {
   status: "uploading" | "uploaded" | "error";
   progress: number;
   file_id?: string;
-  localFile?: File; // Add support for local File object
+  file_url?: string;
+  localFile?: File;
 }
 
 interface FilePreviewProps {
@@ -106,9 +106,13 @@ const FilePreview = ({ file }: FilePreviewProps) => {
     if (localFileUrl) {
       return localFileUrl;
     }
-    // if (file.file_id) {
-    //   return generateFileUrl(file.file_id);
-    // }
+    if (file.file_url) {
+      return file.file_url;
+    }
+    // Fallback to generated URL if file_url is not available
+    if (file.file_id) {
+      return generateFileUrl(file.file_id);
+    }
     return "";
   };
 
@@ -121,8 +125,15 @@ const FilePreview = ({ file }: FilePreviewProps) => {
   };
 
   const downloadFile = () => {
-    if (!file.file_id) return;
-    const url = generateFileUrl(file.file_id);
+    let url = "";
+    if (file.file_url) {
+      url = file.file_url;
+    } else if (file.file_id) {
+      url = generateFileUrl(file.file_id);
+    } else {
+      return;
+    }
+    
     const link = document.createElement("a");
     link.href = url;
     link.download = file.name;

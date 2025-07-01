@@ -29,5 +29,13 @@ interface IUploadFile {
   status: "uploading" | "uploaded" | "error";
   progress: number;
   file_id?: string;
+  file_url?: string;
+  localFile?: File;
 }
-export type { IKnowledge, IKnowledgeTeam, IUploadFile };
+
+interface ISegmentPreview {
+  id: string;
+  content: string;
+  metadata?: any;
+}
+export type { IKnowledge, IKnowledgeTeam, IUploadFile, ISegmentPreview };
