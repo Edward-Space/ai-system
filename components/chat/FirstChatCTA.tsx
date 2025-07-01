@@ -1,10 +1,7 @@
-
-
-
 export const FirstChatCTA = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground  max-w-5xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">DeepSeek AI Assistant</h2>
+      <h2 className="text-2xl font-bold mb-4">Fash AI Assistant</h2>
       <p className="mb-6">Chào mừng bạn đến với trợ lý AI thông minh</p>
 
       <div className="grid grid-cols-2 gap-5 w-full">

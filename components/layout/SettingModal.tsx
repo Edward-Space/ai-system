@@ -8,6 +8,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { GeneralTab } from "./GeneralTab";
+import { AccountTab } from "./AccountTab";
+
+const list_tabs = [
+  {
+    title: "Cài Đặt Chung",
+    value: "general",
+    component: <GeneralTab/>,
+  },
+  {
+    title: "Tài Khoản",
+    value: "account",
+    component: <AccountTab />,
+  },
+];
 
 export const SettingModal = () => {
   return (
@@ -20,8 +36,23 @@ export const SettingModal = () => {
         <DialogHeader>
           <DialogTitle>Cài đặt</DialogTitle>
         </DialogHeader>
-        <div className="">
-            
+        <div className="flex w-full  flex-col gap-6">
+          <Tabs defaultValue={"general"}>
+            <TabsList className="w-full mb-5">
+              {list_tabs.map((e, idx) => (
+                <TabsTrigger key={idx} value={e.value}>
+                  {e.title}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {/* Tabs Content */}
+            {list_tabs.map((e, idx) => (
+              <TabsContent value={e.value} key={idx}>
+               {e.component}
+              </TabsContent>
+            ))}
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>

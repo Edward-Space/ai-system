@@ -101,7 +101,7 @@ export const RenderMessage = ({ message, onReplaceMessage }: RenderMessageProps)
           <div
             id="markdown-render"
             className={cn(
-              `prose prose-sm dark:prose-invert max-w-none flex flex-col gap-5 ${
+              `prose prose-sm dark:prose-invert w-full flex flex-col gap-5 ${
                 isUser && "bg-primary/20 px-4 py-2 rounded-[24px]"
               }`
             )}
@@ -134,7 +134,7 @@ export const RenderMessage = ({ message, onReplaceMessage }: RenderMessageProps)
                 li: ({ children, ...props }) => {
                   return (
                     <li
-                      className=" list-inside marker:text-black/60  "
+                      className=" list-inside marker:text-black/60 w-full  "
                       {...props}
                     >
                       {children}

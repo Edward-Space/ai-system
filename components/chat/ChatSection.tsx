@@ -18,7 +18,7 @@ import { IBot, IConversation } from "@/model/bot";
 import { useRouter } from "next/navigation";
 import { useSelectModel } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import FileUpload from "./FileUpload";
+import ChatUploadModal from "./ChatUploadModal";
 import { funcUtils } from "@/lib/funcUtils";
 /* ------------------------------------------------------------------------------------ */
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -55,6 +55,8 @@ export default function ChatSection({
   const [isStreamFinished, setIsStreamFinished] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [selectedFileUrls, setSelectedFileUrls] = useState<string[]>([]);
+  const [selectedImageUrls, setSelectedImageUrls] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const promptValue = watch("prompt");
@@ -91,6 +93,17 @@ export default function ChatSection({
       // Set cursor to end of text
       textarea.setSelectionRange(content.length, content.length);
     }
+  };
+  /* ------------------------------------------------------------------------------------ */
+  // Handle file upload with URLs
+  const handleFileSelect = (files: File[], urls: string[]) => {
+    setSelectedFiles(files);
+    setSelectedFileUrls(urls);
+  };
+  
+  const handleImageSelect = (images: File[], urls: string[]) => {
+    setSelectedImages(images);
+    setSelectedImageUrls(urls);
   };
   /* ------------------------------------------------------------------------------------ */
   const onSubmit = async (data: FormData) => {
@@ -132,6 +145,8 @@ export default function ChatSection({
     reset();
     setSelectedFiles([]);
     setSelectedImages([]);
+    setSelectedFileUrls([]);
+    setSelectedImageUrls([]);
     // Thêm một khoảng dừng nhỏ trước khi bắt đầu streaming để tạo hiệu ứng tự nhiên
     await new Promise((resolve) => setTimeout(resolve, 300));
     // Reset trạng thái streaming
@@ -147,12 +162,16 @@ export default function ChatSection({
     const signal = abortControllerRef.current.signal;
     /* ------------------------------------------------------------------------------------ */
     try {
+      // Tạo mảng URLs từ files và images đã upload
+      const fileUrls = [...selectedFileUrls, ...selectedImageUrls];
+      
       const payload = {
         bot_id: bot?.id,
         generative_model: selectedModel?.model_id ?? "google/gemini-2.5-pro",
         session_id: session_id,
         prompt: userPrompt,
         /* -------------------------------------------------------------------*/
+        ...(fileUrls.length > 0 && { image_urls: fileUrls }),
         ...(type == "testing" && { bot: bot }),
         ...(type != "agent" && { type: type }),
       };
@@ -373,6 +392,9 @@ export default function ChatSection({
                       setSelectedImages((prev) =>
                         prev.filter((_, i) => i !== index)
                       );
+                      setSelectedImageUrls((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
                     }}
                     className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                   >
@@ -396,6 +418,9 @@ export default function ChatSection({
                     type="button"
                     onClick={() => {
                       setSelectedFiles((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
+                      setSelectedFileUrls((prev) =>
                         prev.filter((_, i) => i !== index)
                       );
                     }}
@@ -428,9 +453,9 @@ export default function ChatSection({
               }}
             />
             <div className="flex items-center justify-between">
-              <FileUpload
-                onFileSelect={setSelectedFiles}
-                onImageSelect={setSelectedImages}
+              <ChatUploadModal
+                onFileSelect={handleFileSelect}
+                onImageSelect={handleImageSelect}
                 disabled={streamingState.isStreaming}
                 maxFiles={5}
                 maxFileSize={10}
