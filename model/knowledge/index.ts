@@ -38,4 +38,39 @@ interface ISegmentPreview {
   content: string;
   metadata?: any;
 }
-export type { IKnowledge, IKnowledgeTeam, IUploadFile, ISegmentPreview };
+interface IDataSources {
+  id: string;
+  create_at: string;
+  update_at: string;
+  knowledge_id: string;
+  type: string;
+  chunks: any[];
+  status: string;
+  chunking_strategy: string;
+  local: {
+    file_name: string;
+    file_size: number;
+    mime_type: string;
+    path: string;
+    upload_date: string;
+  };
+}
+
+interface IDetailKnowledge {
+  id: string;
+  create_at: string;
+  update_at: string;
+  name: string;
+  description: string;
+  type: string;
+  team_id: string;
+  data_sources: IDataSources[];
+}
+export type {
+  IKnowledge,
+  IKnowledgeTeam,
+  IUploadFile,
+  ISegmentPreview,
+  IDetailKnowledge,
+  IDataSources,
+};

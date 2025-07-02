@@ -1,9 +1,13 @@
 import { IKnowledge } from "@/model/knowledge";
 import { FileType2, Image } from "lucide-react";
+import Link from "next/link";
 
 export const KnowledgeItem = ({ knowledge }: { knowledge: IKnowledge }) => {
   return (
-    <div className="w-full shadow-lg rounded-xl p-5 border border-primary/20 flex flex-col gap-5 h-full justify-between">
+    <Link
+      href={"/vi/management-knowledge/" + knowledge.id}
+      className="w-full shadow-lg rounded-xl p-5 border border-primary/20 flex flex-col gap-5 h-full justify-between"
+    >
       <div className="flex gap-2 items-start">
         <div className="size-14 min-w-14 rounded-xl bg-primary/20 flex justify-center items-center">
           {knowledge.type == "text" ? (
@@ -27,6 +31,6 @@ export const KnowledgeItem = ({ knowledge }: { knowledge: IKnowledge }) => {
           {knowledge.description}
         </span>
       </div>
-    </div>
+    </Link>
   );
 };
