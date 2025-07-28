@@ -82,7 +82,7 @@ const HistoryChatItem = ({
 }) => {
   return (
     <div className="w-full">
-      <p className="text-sm font-medium text-black/50">{item.title}</p>
+      <p className="text-sm font-medium text-primary">{item.title}</p>
       <div className="flex flex-col w-full gap-3 py-3">
         {item?.history?.map((item, index) => (
           <Link

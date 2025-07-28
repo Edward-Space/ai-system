@@ -5,12 +5,12 @@ import Link from "next/link";
 const SIDE_BAR_ACTION = [
   {
     label: "New Chat",
-    icon: <SquarePen className="group-data-[collapsible=icon]:size-7 size-5" />,
+    icon: <SquarePen className="size-6" />,
   },
   {
-    label:'Search Chat',
-    icon:<Search className="group-data-[collapsible=icon]:size-7 size-5"/>
-  }
+    label: "Search Chat",
+    icon: <Search className="size-6" />,
+  },
 ];
 
 export const SidebarAction = () => {
@@ -19,11 +19,14 @@ export const SidebarAction = () => {
       {SIDE_BAR_ACTION.map((e, idx) => (
         <Tooltip key={idx}>
           <TooltipTrigger asChild>
-            <Link href={'/vi'}
+            <Link
+              href={"/vi"}
               className="flex items-center gap-2 rounded-lg p-2 text-sm hover:bg-primary/20 cursor-pointer min-w-fit"
             >
               {e.icon}
-              <span className="group-data-[collapsible=icon]:hidden">{e.label}</span>
+              <span className="group-data-[collapsible=icon]:hidden truncate">
+                {e.label}
+              </span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right" className="">

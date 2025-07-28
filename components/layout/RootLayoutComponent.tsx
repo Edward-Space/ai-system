@@ -13,11 +13,11 @@ export const RootLayoutComponent = ({
   return (
     <SidebarProvider className="" defaultOpen={true}>
       <AppSidebar lang={lang} />
-      <SidebarInset className="bg-primary/20">
+      <SidebarInset className="bg-secondary">
         <section
-          className={`relative h-full w-full overflow-hidden px-2 py-2 lg:p-2 lg:pl-1 `}
+          className={`relative h-full w-full overflow-hidden p-2 lg:pl-0  `}
         >
-          <div className="relative h-full w-full overflow-hidden rounded-3xl border-2 border-primary/40 bg-white shadow-md dark:bg-accent-foreground p-5">
+          <div className="relative h-full w-full overflow-hidden rounded-xl bg-primary/10 shadow-md  p-5">
             <HeaderChat />
             <Suspense>{children}</Suspense>
             {/* <FloatingSideBarMB/> */}

@@ -43,7 +43,7 @@ export default async function BotIdPage({
   }
   /* ------------------------------------------------------------------------------------ */
   return (
-    <div className="h-[calc(100vh-60px)] overflow-y-hidden w-full">
+    <div className="lg:h-[calc(100vh-60px)] overflow-y-hidden w-full">
       <HeaderChat type="agent" bot={bot.value?.data} />
       <ChatSection
         lang={lang}

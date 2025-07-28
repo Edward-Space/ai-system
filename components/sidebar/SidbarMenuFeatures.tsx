@@ -12,12 +12,12 @@ const MENU_ITEMS = [
   {
     label: "Quản Lý Bot",
     href: "/management-bot",
-    icon: <Bot className="group-data-[collapsible=icon]:size-7 size-5" />,
+    icon: <Bot className="size-6" />,
   },
   {
     label: "Quản lý Knowledge",
     href: "/management-knowledge",
-    icon: <Brain className="group-data-[collapsible=icon]:size-7 size-5" />,
+    icon: <Brain className="size-6" />,
   },
 ];
 
@@ -51,12 +51,12 @@ export const SidebarMenuFeatures = ({ lang }: { lang: string }) => {
                 href={`/${lang}/${e.href}`}
                 key={idx}
                 className={cn(
-                  "flex gap-2 items-center p-2 text-sm hover:bg-primary/20 transition-all duration-200 rounded-lg min-w-fit w-full",
+                  "flex items-center gap-2 rounded-lg p-2 text-sm hover:bg-primary/20 cursor-pointer min-w-fit",
                   pathName == `/${lang}${e.href}` && "bg-primary/20"
                 )}
               >
                 {e.icon}
-                <span className="group-data-[collapsible=icon]:hidden ">
+                <span className="group-data-[collapsible=icon]:hidden truncate ">
                   {e.label}
                 </span>
               </Link>

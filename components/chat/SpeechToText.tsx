@@ -105,15 +105,14 @@ export default function SpeechToText({
   return (
     <Button
       type="button"
-      variant="ghost"
       size="icon"
       onClick={toggleListening}
       disabled={disabled}
       className={cn(
-        "transition-all duration-200 [&_svg:not([class*='size-'])]:size-5",
-        isListening
-          ? "text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-900/20 animate-pulse"
-          : "text-gray-500 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800",
+        "transition-all duration-200 [&_svg:not([class*='size-'])]:size-5 cursor-pointer rounded-full",
+       isListening
+          ? "text-red-500 hover:text-red-600 bg-red-50 animate-pulse"
+          : "text-primary bg-secondary hover:bg-primary hover:text-secondary",
         className
       )}
       title={isListening ? "Dừng ghi âm" : "Bắt đầu ghi âm"}

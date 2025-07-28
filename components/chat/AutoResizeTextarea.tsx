@@ -70,7 +70,7 @@ const AutoResizeTextarea = forwardRef<
         whiteSpace: 'pre-wrap', // Giữ lại xuống hàng và khoảng trắng
         ...props.style
       }}
-      className={`hide-scrollbar max-h-[100px] rounded-none border-none shadow-none px-3 focus-visible:ring-transparent flex-1 min-h-[54px] py-4 focus-visible:ring-0 focus-visible:ring-offset-0 ${
+      className={`hide-scrollbar max-h-[100px] bg-transparent rounded-none border-none shadow-none px-3 focus-visible:ring-transparent flex-1 min-h-[54px] py-4 focus-visible:ring-0 focus-visible:ring-offset-0 ${
         props.className || ""
       }`}
     />

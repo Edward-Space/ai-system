@@ -468,7 +468,7 @@ export default function ChatSection({
               ))}
             </div>
           )}
-          <div className="flex flex-col gap-2 relative bg-primary/10 py-2 px-3 rounded-[24px] overflow-hidden ">
+          <div className="flex flex-col gap-2 relative bg-secondary py-2 px-3 rounded-[24px] overflow-hidden ">
             <AutoResizeTextarea
               {...register("prompt", { required: true })}
               placeholder="Nhập tin nhắn của bạn..."
@@ -513,11 +513,10 @@ export default function ChatSection({
                 <Button
                   type="submit"
                   size={"icon"}
-                  variant="ghost"
-                  className="text-blue-500 hover:text-blue-600 bg-white cursor-pointer border rounded-full [&_svg:not([class*='size-'])]:size-5 size-10"
+                  className="transition-all duration-200 [&_svg:not([class*='size-'])]:size-5 cursor-pointer rounded-full bg-primary text-secondary"
                   disabled={!promptValue?.trim()}
                 >
-                  <ArrowUp className="h-7 w-7" />
+                  <ArrowUp className="" />
                 </Button>
               )}
             </div>
