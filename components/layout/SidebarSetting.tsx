@@ -46,7 +46,7 @@ export const SidebarSetting = () => {
       </DropdownMenu>
 
 
-      <SidebarTrigger className="bg-transparent hover:bg-primary/20 transition-all duration-300 cursor-pointer shadow-none text-black"/>
+      <SidebarTrigger className="bg-transparent hover:bg-primary/20 transition-all duration-300 cursor-pointer shadow-none text-primary rounded-full"/>
     </>
   );
 };
