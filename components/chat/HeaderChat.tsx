@@ -25,12 +25,10 @@ interface IProps {
 /* ------------------------------------------------------------------------------------ */
 export const HeaderChat = ({ type = "dashboard", bot }: IProps) => {
   return (
-    <div className="w-full flex flex-col lg:flex-row justify-between items-center pb-3 gap-3  ">
-      <ClientOnly>
+    <div className="w-full flex flex-col lg:flex-row lg:justify-between lg:items-center pb-3 gap-3  ">
         {type === "dashboard" && <HeaderChatHome />}
         {type === "agent" && bot && <HeaderChatBot bot={bot} />}
         {type == "testing" && bot && <HeaderChatTesting bot={bot} />}
-      </ClientOnly>
     </div>
   );
 };
@@ -115,7 +113,7 @@ const HeaderChatBot = React.memo(({ bot }: { bot: IBot }) => {
   /* ------------------------------------------------------------------------------------ */
   return (
     <>
-      <div className="flex gap-2 items-center">
+      <div className="flex w-full lg:w-fit lg:justify-start gap-2 items-center">
         <div className="size-12 min-w-12 rounded-full bg-primary/20"></div>
         <div className="flex flex-col">
           <span className="text-sm font-medium">{bot.name}</span>
@@ -124,7 +122,7 @@ const HeaderChatBot = React.memo(({ bot }: { bot: IBot }) => {
           </span>
         </div>
       </div>
-      <div className="flex gap-2 items-center justify-end w-full lg:w-fit">
+      <div className="flex  gap-2 items-center justify-between lg:justify-end w-full lg:w-fit">
         {bot?.active_models && (
           <Select
             defaultValue={bot.active_models[0]?.model_id}
@@ -143,8 +141,11 @@ const HeaderChatBot = React.memo(({ bot }: { bot: IBot }) => {
             </SelectContent>
           </Select>
         )}
-        <ShareModal />
-        <DeleteConversationModal />
+        <div className="flex gap-2 items-center">
+          {" "}
+          <ShareModal />
+          <DeleteConversationModal />
+        </div>
       </div>
     </>
   );

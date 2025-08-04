@@ -6,6 +6,14 @@ import { MultiSelect, MultiSelectOption } from "../ui/multi-select";
 import { useEffect, useState } from "react";
 import { Label } from "../ui/label";
 import { Slider } from "../ui/slider";
+import { DropdownMenu, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface IProps {
   bot: IBot;
@@ -13,6 +21,7 @@ interface IProps {
   handleChangeActiveModel: (active_model: string[]) => void;
   handleChangeSearchSetting: (token: number) => void;
   handleChangeTextSetting: (options: IPropsTextSetting) => void;
+  handleChangeSearchType: (type: string) => void;
 }
 
 export const DetailBotSetting = ({
@@ -21,6 +30,7 @@ export const DetailBotSetting = ({
   handleChangeActiveModel,
   handleChangeSearchSetting,
   handleChangeTextSetting,
+  handleChangeSearchType,
 }: IProps) => {
   /* ------------------------------------------------------------------------------------ */
   const [selectModels, setSelectModels] = useState<string[]>(
@@ -56,10 +66,31 @@ export const DetailBotSetting = ({
         bot={bot}
         handleChangeSearchSetting={handleChangeSearchSetting}
       />
+      <TypeSearch bot={bot} handleChangeSearchType={handleChangeSearchType} />
       <TextSetting
         bot={bot}
         handleChangeTextSetting={handleChangeTextSetting}
       />
+    </div>
+  );
+};
+
+const TypeSearch = ({ bot, handleChangeSearchType }: { bot: IBot; handleChangeSearchType: (type: string) => void }) => {
+  const handleChange = (type: string) => {
+    handleChangeSearchType(type);
+  }
+  return (
+    <div className="flex flex-col gap-5">
+      <p className="text-base font-medium capitalize">Kiểu Tìm Kiếm</p>
+      <Select defaultValue={bot.knowledge_parameters.search_type} onValueChange={handleChange}>
+        <SelectTrigger className="w-full data-[size=default]:h-12">
+          <SelectValue placeholder="Chọn Kiểu Tìm Kiếm" />
+        </SelectTrigger>
+        {/*  */}
+        <SelectContent>
+          <SelectItem value="hybrid">Hybrid Search</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 };
