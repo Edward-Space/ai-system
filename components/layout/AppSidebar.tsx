@@ -17,20 +17,18 @@ export async function AppSidebar({ lang }: { lang: string }) {
   return (
     <>
       {token && (
-        <Sidebar collapsible="icon" className="border-none bg-primary/20 ">
-          <SidebarHeader className="h-fit py-5 px-2 flex justify-between items-center">
+        <Sidebar collapsible="icon" className="bg-secondary px-2 ">
+          <SidebarHeader className="h-fit p-0 py-5">
             <Logo />
           </SidebarHeader>
-          {/*  */}
-          <SidebarContent className="hide-scrollbar h-full px-1 flex flex-col gap-5 ">
+          <SidebarContent className="hide-scrollbar h-full flex flex-col gap-5 ">
             <SidebarAction />
             <SidebarMenuFeatures lang={lang} />
             <Suspense>
               <SidebarConversations lang={lang} />
             </Suspense>
           </SidebarContent>
-          {/*  */}
-          <SidebarFooter className="px-2 py-4 border-t border-gray-200 dark:border-gray-800">
+          <SidebarFooter className="p-0 py-5 flex justify-between w-full items-start group-data-[collapsible=icon]:flex-col flex-row transition-all duration-300">
             <SidebarSetting />
           </SidebarFooter>
         </Sidebar>

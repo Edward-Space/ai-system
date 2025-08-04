@@ -18,7 +18,8 @@ import { IBot, IConversation } from "@/model/bot";
 import { useRouter } from "next/navigation";
 import { useSelectModel } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import FileUpload from "./FileUpload";
+import ChatUploadModal from "./ChatUploadModal";
+import SpeechToText from "./SpeechToText";
 import { funcUtils } from "@/lib/funcUtils";
 /* ------------------------------------------------------------------------------------ */
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -44,7 +45,7 @@ export default function ChatSection({
   /* ------------------------------------------------------------------------------------ */
   const { selectedModel } = useSelectModel();
   /* ------------------------------------------------------------------------------------ */
-  const { register, handleSubmit, reset, watch } = useForm<FormData>();
+  const { register, handleSubmit, reset, watch, setValue } = useForm<FormData>();
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [streamingContent, setStreamingContent] = useState<string>("");
   const [streamingState, setStreamingState] = useState<StreamingState>({
@@ -55,6 +56,8 @@ export default function ChatSection({
   const [isStreamFinished, setIsStreamFinished] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [selectedFileUrls, setSelectedFileUrls] = useState<string[]>([]);
+  const [selectedImageUrls, setSelectedImageUrls] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const promptValue = watch("prompt");
@@ -78,9 +81,47 @@ export default function ChatSection({
         isError: false,
         errorMessage: "",
       });
-      setIsStreamFinished(true);
     }
   };
+  /* ------------------------------------------------------------------------------------ */
+  // Handle replace message into chat input
+  const handleReplaceMessage = (content: string) => {
+    setValue("prompt", content);
+    // Focus vào textarea sau khi set value
+    const textarea = document.querySelector('textarea[name="prompt"]') as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.focus();
+      // Set cursor to end of text
+      textarea.setSelectionRange(content.length, content.length);
+    }
+  };
+  /* ------------------------------------------------------------------------------------ */
+  // Handle file upload with URLs
+  const handleFileSelect = (files: File[], urls: string[]) => {
+    setSelectedFiles(files);
+    setSelectedFileUrls(urls);
+  };
+  
+  const handleImageSelect = (images: File[], urls: string[]) => {
+    setSelectedImages(images);
+    setSelectedImageUrls(urls);
+  };
+  /* ------------------------------------------------------------------------------------ */
+  // Handle speech to text
+  const handleSpeechToText = (transcript: string) => {
+    const currentValue = watch("prompt") || "";
+    const newValue = currentValue ? `${currentValue} ${transcript}` : transcript;
+    setValue("prompt", newValue);
+    
+    // Focus vào textarea sau khi set value
+    const textarea = document.querySelector('textarea[name="prompt"]') as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.focus();
+      // Set cursor to end of text
+      textarea.setSelectionRange(newValue.length, newValue.length);
+    }
+  };
+  /* ------------------------------------------------------------------------------------ */
   const onSubmit = async (data: FormData) => {
     const userPrompt = data?.prompt?.trim();
     if (!userPrompt) return;
@@ -88,7 +129,7 @@ export default function ChatSection({
     if (abortControllerRef.current) {
       cancelStream();
     }
-
+    /* ------------------------------------------------------------------------------------ */
     // Tạo nội dung tin nhắn bao gồm text và thông tin files
     let messageContent = userPrompt;
     if (selectedImages.length > 0 || selectedFiles.length > 0) {
@@ -104,6 +145,22 @@ export default function ChatSection({
           .join(", ")}`;
       }
     }
+    /* ------------------------------------------------------------------------------------ */
+    // Chuẩn bị thông tin files để lưu vào message
+    const messageFiles = [
+      ...selectedImages.map((img, index) => ({
+        name: img.name,
+        url: selectedImageUrls[index] || URL.createObjectURL(img),
+        type: 'image' as const,
+        size: img.size,
+      })),
+      ...selectedFiles.map((file, index) => ({
+        name: file.name,
+        url: selectedFileUrls[index] || '',
+        type: 'file' as const,
+        size: file.size,
+      }))
+    ];
 
     // Thêm tin nhắn người dùng với ID và timestamp
     setMessages((prev) => [
@@ -111,15 +168,18 @@ export default function ChatSection({
       {
         id: useGenId(),
         role: "user",
-        content: messageContent,
+        content: userPrompt, // Chỉ lưu text prompt, không bao gồm thông tin files
         timestamp: Date.now(),
+        files: messageFiles.length > 0 ? messageFiles : undefined,
       },
     ]);
-
+    /* ------------------------------------------------------------------------------------ */
     // Reset form và files
     reset();
     setSelectedFiles([]);
     setSelectedImages([]);
+    setSelectedFileUrls([]);
+    setSelectedImageUrls([]);
     // Thêm một khoảng dừng nhỏ trước khi bắt đầu streaming để tạo hiệu ứng tự nhiên
     await new Promise((resolve) => setTimeout(resolve, 300));
     // Reset trạng thái streaming
@@ -130,22 +190,25 @@ export default function ChatSection({
       errorMessage: "",
     });
     setIsStreamFinished(false);
-
     // Tạo AbortController mới
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
-
+    /* ------------------------------------------------------------------------------------ */
     try {
+      // Tạo mảng URLs từ files và images đã upload
+      const fileUrls = [...selectedFileUrls, ...selectedImageUrls];
+      
       const payload = {
         bot_id: bot?.id,
         generative_model: selectedModel?.model_id ?? "google/gemini-2.5-pro",
         session_id: session_id,
         prompt: userPrompt,
-        //
+        /* -------------------------------------------------------------------*/
+        ...(fileUrls.length > 0 && { image_urls: fileUrls }),
         ...(type == "testing" && { bot: bot }),
         ...(type != "agent" && { type: type }),
       };
-
+      /* -------------------------------------------------------------------*/
       // Gọi API với signal để có thể hủy
       const response = await fetch(
         `${BASE_URL}${type == "dashboard" ? dashboard : other}`,
@@ -160,7 +223,7 @@ export default function ChatSection({
           credentials: "include", // Tương đương withCredentials: true trong axios
         }
       );
-
+      /* -------------------------------------------------------------------*/
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -168,19 +231,20 @@ export default function ChatSection({
       if (!response.body) {
         throw new Error("No response body");
       }
+      /* -------------------------------------------------------------------*/
       let textBuffer = "";
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-
+      /* -------------------------------------------------------------------*/
       // Xử lý stream
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-
+        /* -------------------------------------------------------------------*/
         const chunk = decoder.decode(value, { stream: true });
         const lines = chunk.trim().split("\n");
-        setStreamingContent((prev) => prev + chunk);
-        //
+        setStreamingContent("Thinking...");
+        /* -------------------------------------------------------------------*/
         lines
           .filter(
             (line) =>
@@ -193,10 +257,11 @@ export default function ChatSection({
             const jsonPart = line.replace(/^data:\s*/, "");
             try {
               const json = JSON.parse(jsonPart);
-
+              //
               if (!session_id && json.session_id && type != "testing") {
                 route.replace(`?session_id=${json.session_id}`);
               }
+              // 
               if (Object.keys(json).length === 0) {
                 setMessages((prev) => [
                   ...prev,
@@ -209,12 +274,11 @@ export default function ChatSection({
                 ]);
                 setIsStreamFinished(true);
               }
-              if (
-                json.content !== undefined &&
-                json.event_type == "step_update"
-              ) {
-                setStreamingContent(json.content);
+              //
+              if (json.event_type == "step_update") {
+                setStreamingContent(json.status);
               }
+              //
               if (json.content !== undefined && json.event_type == "response") {
                 textBuffer += json.content;
                 setStreamingContent(textBuffer);
@@ -224,11 +288,10 @@ export default function ChatSection({
             }
           });
       }
-
+      /* -------------------------------------------------------------------*/
       // Hoàn thành stream
       setIsStreamFinished(true);
-      // Thêm tin nhắn assistant vào danh sách với ID và timestamp
-
+      /* -------------------------------------------------------------------*/
       // Reset trạng thái streaming
       setStreamingState({
         isStreaming: false,
@@ -266,12 +329,6 @@ export default function ChatSection({
       });
     }
   }, [messages]);
-  // Lưu tin nhắn vào localStorage khi messages thay đổi
-  useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem("chatMessages", JSON.stringify(messages));
-    }
-  }, [messages]);
   // Cleanup effect
   useEffect(() => {
     return () => {
@@ -280,20 +337,7 @@ export default function ChatSection({
       }
     };
   }, []);
-  // Lấy lịch sử chat từ localStorage khi component được mount
-  useEffect(() => {
-    const savedMessages = localStorage.getItem("chatMessages");
-    if (savedMessages) {
-      try {
-        const parsedMessages = JSON.parse(savedMessages);
-        if (Array.isArray(parsedMessages)) {
-          setMessages(parsedMessages);
-        }
-      } catch (error) {
-        console.error("Error parsing saved messages:", error);
-      }
-    }
-  }, []);
+  // Load conversation
   useEffect(() => {
     const history: IMessage[] =
       conversations?.messages.map((e) => ({
@@ -308,13 +352,10 @@ export default function ChatSection({
   /* ------------------------------------------------------------------------------------ */
   return (
     <div
-      className={cn(
-        "flex flex-1 flex-col items-center justify-center  w-full",
-        {
-          "h-[calc(100vh-100px)]": type !== "testing",
-          "h-[calc(100vh-280px)]": type === "testing",
-        }
-      )}
+      className={cn("flex flex-1 flex-col items-center justify-center w-full", {
+        "h-[calc(100vh-100px)]": type !== "testing",
+        "h-[calc(100vh-280px)]": type === "testing",
+      })}
     >
       {/* Chat Space */}
       <ScrollArea
@@ -324,6 +365,7 @@ export default function ChatSection({
             ? "h-[70%]"
             : "h-[80%]"
         } pb-4 lg:p-4 w-full chat-scroll`}
+        style={{display:'block'}}
       >
         <div className="space-y-6 transition-all duration-300">
           {messages.length === 0 && !streamingState.isStreaming && (
@@ -338,7 +380,10 @@ export default function ChatSection({
               className="animate-fade-in streaming-content"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <RenderMessage message={message} />
+              <RenderMessage 
+                message={message} 
+                onReplaceMessage={handleReplaceMessage}
+              />
             </div>
           ))}
           {/* Hiển thị nội dung đang streaming với animation */}
@@ -357,119 +402,126 @@ export default function ChatSection({
       </ScrollArea>
       {/* Input Space */}
       <div className="h-auto flex items-end  pb-5 w-full">
-        <div className="max-w-5xl w-full mx-auto">
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col w-full gap-2"
-          >
-            {/* File Preview Section */}
-            {(selectedFiles.length > 0 || selectedImages.length > 0) && (
-              <div className="flex flex-wrap gap-2 p-3 bg-primary/10 rounded-[24px] ">
-                {/* Image Previews */}
-                {selectedImages.map((image, index) => (
-                  <div key={`image-${index}`} className="relative group">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden  bg-white dark:bg-gray-700">
-                      <img
-                        src={URL.createObjectURL(image)}
-                        alt={image.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedImages((prev) =>
-                          prev.filter((_, i) => i !== index)
-                        );
-                      }}
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ×
-                    </button>
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate rounded-b-lg">
-                      {image.name}
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col w-full gap-2 max-w-5xl mx-auto"
+        >
+          {/* File Preview Section */}
+          {(selectedFiles.length > 0 || selectedImages.length > 0) && (
+            <div className="flex flex-wrap gap-2 p-3 bg-primary/10 rounded-[24px] ">
+              {/* Image Previews */}
+              {selectedImages.map((image, index) => (
+                <div key={`image-${index}`} className="relative group">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden  bg-white dark:bg-gray-700">
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={image.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedImages((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
+                      setSelectedImageUrls((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
+                    }}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ×
+                  </button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate rounded-b-lg">
+                    {image.name}
+                  </div>
+                </div>
+              ))}
+              {/* File Previews */}
+              {selectedFiles.map((file, index) => (
+                <div key={`file-${index}`} className="relative group">
+                  <div className="w-32 h-16 rounded-lg  bg-white dark:bg-gray-700 flex flex-col items-center justify-center p-2">
+                    <div className="text-2xl mb-1">📄</div>
+                    <div className="text-xs text-center truncate w-full">
+                      {file.name.split(".").pop()?.toUpperCase()}
                     </div>
                   </div>
-                ))}
-                {/* File Previews */}
-                {selectedFiles.map((file, index) => (
-                  <div key={`file-${index}`} className="relative group">
-                    <div className="w-32 h-16 rounded-lg  bg-white dark:bg-gray-700 flex flex-col items-center justify-center p-2">
-                      <div className="text-2xl mb-1">📄</div>
-                      <div className="text-xs text-center truncate w-full">
-                        {file.name.split(".").pop()?.toUpperCase()}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedFiles((prev) =>
-                          prev.filter((_, i) => i !== index)
-                        );
-                      }}
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ×
-                    </button>
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate rounded-b-lg">
-                      {file.name}
-                    </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFiles((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
+                      setSelectedFileUrls((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
+                    }}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ×
+                  </button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate rounded-b-lg">
+                    {file.name}
                   </div>
-                ))}
-              </div>
-            )}
-            <div className="flex flex-col gap-2 relative bg-primary/10 py-2 px-3    rounded-[24px] overflow-hidden ">
-              <AutoResizeTextarea
-                {...register("prompt", { required: true })}
-                placeholder="Nhập tin nhắn của bạn..."
-                style={{ resize: "none" }}
-                className="flex-1 min-h-[54px] py-4   focus-visible:ring-0 focus-visible:ring-offset-0"
-                disabled={streamingState.isStreaming}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    const promptValue = watch("prompt");
-                    if (promptValue?.trim() && !streamingState.isStreaming) {
-                      handleSubmit(onSubmit)();
-                    }
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-col gap-2 relative bg-secondary py-2 px-3 rounded-[24px] overflow-hidden ">
+            <AutoResizeTextarea
+              {...register("prompt", { required: true })}
+              placeholder="Nhập tin nhắn của bạn..."
+              style={{ resize: "none" }}
+              disabled={streamingState.isStreaming}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  const promptValue = watch("prompt");
+                  if (promptValue?.trim() && !streamingState.isStreaming) {
+                    handleSubmit(onSubmit)();
                   }
-                  // Shift+Enter sẽ cho phép xuống hàng (hành vi mặc định)
-                }}
-              />
-
-              <div className="flex items-center justify-between">
-                <FileUpload
-                  onFileSelect={setSelectedFiles}
-                  onImageSelect={setSelectedImages}
+                }
+                // Shift+Enter sẽ cho phép xuống hàng (hành vi mặc định)
+              }}
+            />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ChatUploadModal
+                  onFileSelect={handleFileSelect}
+                  onImageSelect={handleImageSelect}
                   disabled={streamingState.isStreaming}
                   maxFiles={5}
                   maxFileSize={10}
                 />
-                {streamingState.isStreaming ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={cancelStream}
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 [&_svg:not([class*='size-'])]:size-7 size-10"
-                  >
-                    <X className="h-7  w-7 " />
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    size={"icon"}
-                    variant="ghost"
-                    className="text-blue-500 hover:text-blue-600 bg-white cursor-pointer border rounded-full [&_svg:not([class*='size-'])]:size-5 size-10"
-                    disabled={!promptValue?.trim()}
-                  >
-                    <ArrowUp className="h-7 w-7" />
-                  </Button>
-                )}
+                <SpeechToText
+                  onTranscript={handleSpeechToText}
+                  disabled={streamingState.isStreaming}
+                />
               </div>
+              {streamingState.isStreaming ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={cancelStream}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 [&_svg:not([class*='size-'])]:size-7 size-10"
+                >
+                  <X className="h-7 w-7" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  size={"icon"}
+                  className="transition-all duration-200 [&_svg:not([class*='size-'])]:size-5 cursor-pointer rounded-full bg-primary text-secondary"
+                  disabled={!promptValue?.trim()}
+                >
+                  <ArrowUp className="" />
+                </Button>
+              )}
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );

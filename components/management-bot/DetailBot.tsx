@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { DetailBotPrompt } from "./DetailBotPrompt";
 import { DetailBotSetting } from "./DetailBotSetting";
 import { DetailBotTesting } from "./DetailBotTesting";
-import { useState } from "react";
+import {  useState } from "react";
 import { IModel } from "@/model/model";
 import Link from "next/link";
 import { Bot, Undo2 } from "lucide-react";
@@ -63,9 +63,16 @@ export const DetailManagementBot = ({
       llm_parameters: options,
     }));
   };
-
+  const handleChangeSearchType = (type: string) => {
+    setBotDetail((prev) => ({
+      ...prev,
+      knowledge_parameters: {
+        ...prev.knowledge_parameters,
+        search_type: type,
+      },
+    }));
+  };
   /* ------------------------------------------------------------------------------------ */
-
   return (
     <div className="w-full flex flex-col gap-5  ">
       <div className="w-full flex justify-between items-center ">
@@ -109,6 +116,7 @@ export const DetailManagementBot = ({
                   handleChangeActiveModel={handleChangeActiveModel}
                   handleChangeSearchSetting={handleChangeSearchSetting}
                   handleChangeTextSetting={handleChangeTextSetting}
+                  handleChangeSearchType={handleChangeSearchType}
                 />
                 <DetailBotTesting bot={botDetail} />
               </div>

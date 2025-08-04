@@ -9,6 +9,12 @@ interface IMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: number;
+  files?: {
+    name: string;
+    url: string;
+    type: 'image' | 'file';
+    size?: number;
+  }[];
 }
 
 interface StreamingState {

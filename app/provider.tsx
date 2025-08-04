@@ -1,14 +1,20 @@
 "use client";
 import { SWRConfig } from "swr";
 import { Toaster } from "sonner";
-export const SWRProvider = ({ children }: { children: React.ReactNode }) => {
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+export const SWRProvider = ({
+  children,
+  ...props
+}: React.ComponentProps<typeof NextThemesProvider>) => {
   const optionConfigSWR = {
     revalidateOnFocus: false,
   };
   return (
     <SWRConfig value={optionConfigSWR}>
-      <Toaster />
-      {children}
+      <NextThemesProvider {...props}>
+        <Toaster />
+        {children}
+      </NextThemesProvider>
     </SWRConfig>
   );
 };
